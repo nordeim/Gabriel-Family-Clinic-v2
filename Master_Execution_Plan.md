@@ -79,27 +79,27 @@ const TEAM_STRUCTURE = {
 gantt
     title Gabriel Family Clinic v2.0 Development Timeline
     dateFormat YYYY-MM-DD
-    
+
     section Foundation
     Phase 0 - Setup           :2024-01-01, 14d
-    
+
     section Core Development
-    Phase 1 - Infrastructure  :14d, 28d
-    Phase 2 - Patient Portal  :28d
-    Phase 3 - Doctor Portal   :28d
-    Phase 4 - Admin Dashboard :28d
-    
+    Phase 1 - Infrastructure  :2024-01-15, 14d
+    Phase 2 - Patient Portal  :2024-01-29, 28d
+    Phase 3 - Doctor Portal   :2024-02-26, 28d
+    Phase 4 - Admin Dashboard :2024-03-25, 28d
+
     section Integration
-    Phase 5 - Payments        :28d
-    Phase 6 - Communications  :28d
-    
+    Phase 5 - Payments        :2024-04-22, 28d
+    Phase 6 - Communications  :2024-05-20, 28d
+
     section Enhancement
-    Phase 7 - Advanced        :56d
-    Phase 8 - Optimization    :56d
-    
+    Phase 7 - Advanced        :2024-06-17, 56d
+    Phase 8 - Optimization    :2024-08-12, 56d
+
     section Launch
-    Phase 9 - Preparation     :42d
-    Phase 10 - Post-Launch    :28d
+    Phase 9 - Preparation     :2024-10-07, 42d
+    Phase 10 - Post-Launch    :2024-11-18, 28d
 ```
 
 ---
