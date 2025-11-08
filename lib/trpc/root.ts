@@ -1,4 +1,4 @@
-// @/lib/trpc/root.ts
+// lib/trpc/root.ts
 
 import { router, publicProcedure } from "./server";
 import { patientRouter } from "./routers/patient.router";
@@ -8,12 +8,11 @@ import { doctorRouter } from "./routers/doctor.router";
 import { consultationRouter } from "./routers/consultation.router";
 import { adminRouter } from "./routers/admin.router";
 import { paymentRouter } from "./routers/payment.router";
-// import { reportsRouter } from "./routers/reports.router"; // Placeholder for future phase
+import { userRouter } from "./routers/user.router"; // For user preferences
 
 /**
  * This is the primary router for your entire server.
- *
- * All routers added in /api/routers should be manually added here.
+ * All feature routers are merged here to create a single type-safe API.
  */
 export const appRouter = router({
   /**
@@ -24,27 +23,32 @@ export const appRouter = router({
   }),
 
   // =================================================================
-  // PUBLIC & PATIENT PORTAL ROUTERS
+  // PUBLIC & PATIENT-FACING ROUTERS
+  // These are accessible to the public or authenticated patients.
   // =================================================================
-  patient: patientRouter,
-  appointment: appointmentRouter,
-  clinic: clinicRouter,
-  payment: paymentRouter, // Payment is primarily a patient-facing action
+  patient: patientRouter,         // Patient-specific data
+  appointment: appointmentRouter, // Booking flow
+  clinic: clinicRouter,           // Public clinic info (e.g., queue status)
+  payment: paymentRouter,         // Payment processing
+  user: userRouter,               // User settings (e.g., notification preferences)
 
   // =================================================================
   // DOCTOR PORTAL ROUTERS
+  // These are protected and accessible only to users with a 'doctor' role.
   // =================================================================
   doctor: doctorRouter,
   consultation: consultationRouter,
-  // prescription: prescriptionRouter, // To be added in a future phase
-  // mc: mcRouter, // To be added in a future phase
+  // prescription: prescriptionRouter, // Placeholder for a future phase
+  // mc: mcRouter, // Placeholder for a future phase
 
   // =================================================================
   // ADMIN PORTAL ROUTERS
+  // These are protected and accessible only to users with an 'admin' role.
   // =================================================================
   admin: adminRouter,
-  // reports: reportsRouter, // To be added in a future phase
+  // reports: reportsRouter, // Placeholder for a future phase
 });
 
-// export type definition of API
+// Export the type definition of the API router.
+// This is used by the tRPC client to provide end-to-end type safety.
 export type AppRouter = typeof appRouter;
