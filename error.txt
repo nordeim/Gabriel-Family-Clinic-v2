@@ -1,0 +1,56 @@
+$ npm run build
+
+> gabriel-family-clinic-v2@0.1.0 build
+> next build
+
+❌ Invalid environment variables: [
+  {
+    code: 'invalid_type',
+    expected: 'string',
+    received: 'undefined',
+    path: [ 'DATABASE_URL' ],
+    message: 'Required'
+  },
+  {
+    code: 'invalid_type',
+    expected: 'string',
+    received: 'undefined',
+    path: [ 'SUPABASE_SERVICE_ROLE_KEY' ],
+    message: 'Required'
+  },
+  {
+    code: 'invalid_type',
+    expected: 'string',
+    received: 'undefined',
+    path: [ 'APP_ENCRYPTION_KEY' ],
+    message: 'Required'
+  },
+  {
+    code: 'invalid_type',
+    expected: 'string',
+    received: 'undefined',
+    path: [ 'NEXT_PUBLIC_SUPABASE_URL' ],
+    message: 'Required'
+  },
+  {
+    code: 'invalid_type',
+    expected: 'string',
+    received: 'undefined',
+    path: [ 'NEXT_PUBLIC_SUPABASE_ANON_KEY' ],
+    message: 'Required'
+  }
+]
+ ⨯ Failed to load next.config.js, see more info here https://nextjs.org/docs/messages/next-config-error
+
+> Build error occurred
+Error: Invalid environment variables
+    at onValidationError (file:///Home1/project/Gabriel-Family-Clinic-v2/node_modules/@t3-oss/env-core/dist/src-Bb3GbGAa.js:54:9)
+    at createEnv (file:///Home1/project/Gabriel-Family-Clinic-v2/node_modules/@t3-oss/env-core/dist/src-Bb3GbGAa.js:59:28)
+    at createEnv (file:///Home1/project/Gabriel-Family-Clinic-v2/node_modules/@t3-oss/env-nextjs/dist/index.js:16:9)
+    at file:///Home1/project/Gabriel-Family-Clinic-v2/src/env.js:5:20
+    at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async loadConfig (/Home1/project/Gabriel-Family-Clinic-v2/node_modules/next/dist/server/config.js:711:36)
+    at async Span.traceAsyncFn (/Home1/project/Gabriel-Family-Clinic-v2/node_modules/next/dist/trace/trace.js:154:20)
+    at async /Home1/project/Gabriel-Family-Clinic-v2/node_modules/next/dist/build/index.js:374:28
+    at async Span.traceAsyncFn (/Home1/project/Gabriel-Family-Clinic-v2/node_modules/next/dist/trace/trace.js:154:20)
