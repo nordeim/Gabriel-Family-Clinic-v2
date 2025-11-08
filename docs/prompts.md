@@ -89,3 +89,8 @@ awesome job in meticulously double-checking and correctly generating the complet
 ---
 
 awesome job so far! please continue to keep up the good work with the rigorous and meticulous approach! now, help me to meticulously review the following build error, then think deeper and think harder to deeply explore thoroughly and systematically how best to fix the issue. Then meticulously create an implementation plan to fix the error. Review and validate the plan before proceeding cautiously.
+
+---
+
+awesome job in your meticulous analysis! attached is the current `README.md` for the GitHub repo. Please meticulously review it, then meticulously create a comprehensive implementation plan to create a complete updated replacement file with precise fix (update only the necessary sections). Review and validate the implementation plan before proceeding cautiously according to it to create a complete replacement file that is correct and accurate in alignment with the current codebase. Double-check the generated replacement file to ensure that it is complete without any placeholder comments.
+
