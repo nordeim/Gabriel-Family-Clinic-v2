@@ -1,4 +1,4 @@
-// @/pages/_app.tsx
+// pages/_app.tsx
 
 import "@/styles/globals.css";
 import "@mantine/core/styles.css";
@@ -11,6 +11,7 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 import { theme } from "@/styles/theme";
 import { Layout } from "@/components/layout/Layout";
 import { cn } from "@/lib/utils";
+import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 
 // Configure the Inter font for self-hosting. This improves performance and prevents layout shift.
 const inter = Inter({
@@ -24,6 +25,7 @@ const inter = Inter({
  * - MantineProvider: Provides the theme and components for the UI library.
  * - AuthProvider: Manages and provides the user's authentication state.
  * - Layout: Provides the consistent Header, Footer, and page structure.
+ * - FeedbackWidget: Provides the global user feedback collection tool.
  */
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -36,6 +38,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <Layout>
               <Component {...pageProps} />
             </Layout>
+            <FeedbackWidget />
           </AuthProvider>
         </MantineProvider>
       </TRPCReactProvider>

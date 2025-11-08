@@ -1,0 +1,66 @@
+# .github/workflows/scheduled-maintenance.yml
+name: Scheduled Weekly Maintenance
+
+on:
+  schedule:
+    # Runs every Sunday at 3:00 AM SGT (Saturday 19:00 UTC)
+    - cron: "0 19 * * 6"
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  run-maintenance-scripts:
+    name: Run Weekly Maintenance
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Database Maintenance Script
+        run: npm run db:maintenance # Assuming a script is added to package.json
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Run Snyk Security Scan
+        uses: snyk/actions/node@master
+        continue-on-error: true # Don't fail the workflow, just report
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Send Summary Report to Slack
+        if: always() # Run this step even if previous steps fail
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "Weekly Maintenance Report for GFC v2.0",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ Weekly maintenance scripts completed at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}."
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Database Maintenance: `${{ steps.run-db-maintenance.outcome }}`\nSecurity Scan: `${{ steps.run-snyk.outcome }}`"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
