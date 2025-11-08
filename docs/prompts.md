@@ -72,6 +72,10 @@ awesome meticulous work so far! but you did not give me the complete working rep
 
 ---
 
+awesome meticulous work so far! from the "diff" command output below, you did not give me the complete working replacement file for two shown. now, please meticulously double check and validate your last generated version of the two files to make sure they are correct and accurate. Remember to always generate a complete working replacement file for each file that needs updating.
+
+---
+
 awesome job so far! but you did not generate the complete working full replacement for next.config.js. please meticulously review your plan and then generate the complete replacement version for it.
 
 ---
