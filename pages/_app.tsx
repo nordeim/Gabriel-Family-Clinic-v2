@@ -1,10 +1,10 @@
-// pages/_app.tsx (Updated)
+// @/pages/_app.tsx
 
 import "@/styles/globals.css";
 import "@mantine/core/styles.css";
 
 import type { AppType } from "next/app";
-import { Inter } from "next/font/google"; // Import from next/font
+import { Inter } from "next/font/google";
 import { MantineProvider } from "@mantine/core";
 import { TRPCReactProvider } from "@/lib/trpc/react";
 import { AuthProvider } from "@/lib/auth/AuthContext";
@@ -12,15 +12,24 @@ import { theme } from "@/styles/theme";
 import { Layout } from "@/components/layout/Layout";
 import { cn } from "@/lib/utils";
 
-// Configure the font
+// Configure the Inter font for self-hosting. This improves performance and prevents layout shift.
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans", // Create a CSS variable
+  variable: "--font-sans", // This creates a CSS variable for our font.
 });
 
+/**
+ * The main App component. It wraps every page with global providers and layout.
+ * - TRPCReactProvider: Provides the tRPC client for type-safe API calls.
+ * - MantineProvider: Provides the theme and components for the UI library.
+ * - AuthProvider: Manages and provides the user's authentication state.
+ * - Layout: Provides the consistent Header, Footer, and page structure.
+ */
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <main className={cn("font-sans", inter.variable)}> {/* Apply the font variable */}
+    // Use a div as the root wrapper and apply the font variable class.
+    // This is semantically more correct than <main> at this top level.
+    <div className={cn("font-sans", inter.variable)}>
       <TRPCReactProvider>
         <MantineProvider theme={theme} defaultColorScheme="auto">
           <AuthProvider>
@@ -30,7 +39,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           </AuthProvider>
         </MantineProvider>
       </TRPCReactProvider>
-    </main>
+    </div>
   );
 };
 
