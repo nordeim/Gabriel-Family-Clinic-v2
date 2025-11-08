@@ -1,0 +1,4 @@
+sed -i 's/^-- database\//\/\/ database\//' oo1
+
+cd database/migrations && sed -i 's/^\/\/ database\//-- database\//' *sql
+
