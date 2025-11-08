@@ -62,4 +62,17 @@ Now, please meticulously create a comprehensive sub-plan to create all the neces
 
 ---
 
-awesome planning! yes, please meticulously proceed according to your plan.
+awesome meticulous planning! yes, please meticulously proceed according to your plan.
+
+---
+
+awesome meticulous work so far! but you did not give me the complete working replacement file for `lib/trpc/root.ts`. now, please meticulously double check and validate the following edited version to make sure it is correct and accurate. Remember to always generate a complete working replacement file for each file that needs updating.
+
+---
+
+awesome job so far! but you did not generate the complete working full replacement for next.config.js. please meticulously review your plan and then generate the complete replacement version for it.
+
+---
+
+awesome review and correction! you also did not generate the complete working replacement file for the following two files that were just updated. please meticulously plan to create the complete updated version with no placeholder comments. you have to double-check them for completeness after re-generating them.
+
