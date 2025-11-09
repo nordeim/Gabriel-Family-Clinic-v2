@@ -1,12 +1,9 @@
 // @/lib/trpc/context.ts
 import { type FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function createContext({
-  req,
-  resHeaders,
-}: FetchCreateContextFnOptions) {
+export async function createContext(_opts: FetchCreateContextFnOptions) {
   const cookieStore = cookies();
 
   const supabase = createServerClient(

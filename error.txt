@@ -15,35 +15,6 @@ $ npm run build
 > [PWA]   url: /sw.js
 > [PWA]   scope: /
  ✓ Compiled successfully
-
-./components/doctor/TodaySchedule.tsx
-12:10  Warning: 'cn' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./components/payment/CheckoutForm.tsx
-3:21  Warning: 'useState' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/auth/actions.ts
-28:58  Warning: 'nric' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/trpc/context.ts
-3:35  Warning: 'CookieOptions' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-7:3  Warning: 'req' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
-8:3  Warning: 'resHeaders' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/trpc/root.ts
-3:18  Warning: 'publicProcedure' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/trpc/routers/consultation.router.ts
-32:15  Warning: 'data' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/trpc/routers/health.router.ts
-5:56  Warning: 'ctx' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
-10:61  Warning: 'ctx' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/trpc/routers/patient.router.ts
-61:56  Warning: 'ctx' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
-
-info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
  ✓ Linting and checking validity of types    
  ✓ Collecting page data    
  ✓ Generating static pages (23/23)
@@ -92,4 +63,15 @@ Route (pages)                                             Size     First Load JS
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
+
+$ npm run start
+
+> gabriel-family-clinic-v2@0.1.0 start
+> next start
+
+  ▲ Next.js 14.2.33
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1799ms
 

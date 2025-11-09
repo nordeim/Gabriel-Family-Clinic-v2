@@ -59,6 +59,8 @@ export const patientRouter = router({
   }),
 
   getMedicalRecords: protectedProcedure.query(async ({ ctx }) => {
+    // `ctx` may be unused in this placeholder; mark as used to satisfy lint.
+    void ctx;
     // Similar logic to getAppointments, fetching from medical_records table
     // Placeholder for brevity
     return [];

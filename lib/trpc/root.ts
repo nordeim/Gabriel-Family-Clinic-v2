@@ -1,6 +1,6 @@
 // lib/trpc/root.ts
 
-import { router, publicProcedure } from "./server";
+import { router } from "./server";
 import { patientRouter } from "./routers/patient.router";
 import { appointmentRouter } from "./routers/appointment.router";
 import { clinicRouter } from "./routers/clinic.router";

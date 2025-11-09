@@ -9,7 +9,6 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge"; // Use lowercase filename to match on-disk module
-import { cn } from "@/lib/utils";
 
 // Extend dayjs with the plugin needed to parse time strings like "10:30:00"
 dayjs.extend(customParseFormat);

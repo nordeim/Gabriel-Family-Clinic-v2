@@ -25,7 +25,7 @@ export async function signup(formData: unknown) {
     return { error: "Invalid form data.", details: parsed.error.flatten() };
   }
 
-  const { email, password, fullName, phone, dateOfBirth, nric } = parsed.data;
+  const { email, password, fullName, phone, dateOfBirth, nric: _nric } = parsed.data;
 
   // 1. Create the auth user
   const { data: authData, error: authError } = await supabase.auth.signUp({

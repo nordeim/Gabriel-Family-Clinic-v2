@@ -29,7 +29,7 @@ export const consultationRouter = router({
     .input(consultationSchema)
     .mutation(async ({ ctx, input }) => {
       // In a real app, this would use UPSERT on appointment_id
-      const { data, error } = await ctx.supabase
+      const { data: _data, error } = await ctx.supabase
         .from("medical_records")
         .update({
           chief_complaint: input.chiefComplaint,

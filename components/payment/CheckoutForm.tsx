@@ -1,6 +1,6 @@
 // components/payment/CheckoutForm.tsx
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { api } from "@/lib/trpc/client";
