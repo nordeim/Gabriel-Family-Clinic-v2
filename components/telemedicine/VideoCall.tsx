@@ -1,7 +1,8 @@
 // components/telemedicine/VideoCall.tsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import DailyIframe, { DailyCall } from "@daily-co/daily-js";
+import DailyIframe from "@daily-co/daily-js";
+import type { DailyCall } from "@daily-co/daily-js";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { AlertCircle } from "lucide-react";
 
@@ -33,8 +34,17 @@ export function VideoCall({ roomUrl, displayName }: VideoCallProps) {
     callFrameRef.current = frame;
 
     const handleJoined = () => setCallState("joined");
+    const extractErrorMessage = (e: unknown) => {
+      if (e instanceof Error) return e.message;
+      if (typeof e === "object" && e !== null && "errorMsg" in e) {
+        const v = (e as Record<string, unknown>).errorMsg;
+        return typeof v === "string" ? v : String(v);
+      }
+      return String(e ?? "An unknown error occurred.");
+    };
+
     const handleError = (e: unknown) => {
-      const message = e instanceof Error ? e.message : (e && typeof e === 'object' && 'errorMsg' in e ? String((e as any).errorMsg) : 'An unknown error occurred.');
+      const message = extractErrorMessage(e);
       console.error("Daily.co error:", message);
       setErrorMessage(message);
       setCallState("error");

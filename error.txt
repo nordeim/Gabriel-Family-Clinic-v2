@@ -1,13 +1,3 @@
-$ npx prisma generate
-Prisma schema loaded from prisma/schema.prisma
-
-✔ Generated Prisma Client (v6.19.0) to ./node_modules/@prisma/client in 190ms
-
-Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
-
-Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
-
-pete@pop-os:/home/project/Gabriel-Family-Clinic-v2
 $ npm run build
 
 > gabriel-family-clinic-v2@0.1.0 build
@@ -24,38 +14,7 @@ $ npm run build
 > [PWA] Service worker: /home/project/Gabriel-Family-Clinic-v2/public/sw.js
 > [PWA]   url: /sw.js
 > [PWA]   scope: /
- ⚠ Compiled with warnings
-
-./lib/trpc/middlewares/adminAuth.ts
-Attempted import error: 't' is not exported from '../server' (imported as 't').
-
-Import trace for requested module:
-./lib/trpc/middlewares/adminAuth.ts
-./lib/trpc/routers/admin.router.ts
-./lib/trpc/root.ts
-./pages/api/trpc/[...trpc].ts
-
-./lib/trpc/middlewares/doctorAuth.ts
-Attempted import error: 't' is not exported from '../server' (imported as 't').
-
-Import trace for requested module:
-./lib/trpc/middlewares/doctorAuth.ts
-./lib/trpc/routers/consultation.router.ts
-./lib/trpc/root.ts
-./pages/api/trpc/[...trpc].ts
-
-
-Failed to compile.
-
-./pages/api/cron/process-jobs.ts
-18:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./pages/api/health.ts
-20:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-32:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./pages/api/webhooks/stripe.ts
-25:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+ ✓ Compiled successfully
 
 ./pages/dashboard/vaccinations/index.tsx
 7:17  Warning: 'records' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
@@ -63,10 +22,6 @@ Failed to compile.
 
 ./pages/doctor/consultations/[appointmentId].tsx
 12:11  Warning: 'appointmentId' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./pages/doctor/dashboard/index.tsx
-15:15  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
-15:54  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
 
 ./pages/doctor/patients/[patientId]/history.tsx
 13:11  Warning: 'data' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
@@ -77,15 +32,10 @@ Failed to compile.
 
 ./components/doctor/TodaySchedule.tsx
 12:10  Warning: 'cn' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-61:25  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
 
 ./components/payment/CheckoutForm.tsx
 3:21  Warning: 'useState' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 31:6  Warning: React Hook useEffect has a missing dependency: 'data'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-
-./components/telemedicine/VideoCall.tsx
-4:1  Warning: Imports "DailyCall" are only used as type.  @typescript-eslint/consistent-type-imports
-36:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./lib/auth/AuthContext.tsx
 4:1  Warning: Imports "ReactNode" are only used as type.  @typescript-eslint/consistent-type-imports
@@ -99,7 +49,6 @@ Failed to compile.
 
 ./lib/jobs/queue.ts
 4:1  Warning: All imports in the declaration are only used as types. Use `import type`.  @typescript-eslint/consistent-type-imports
-54:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./lib/notifications/types.ts
 2:1  Warning: All imports in the declaration are only used as types. Use `import type`.  @typescript-eslint/consistent-type-imports
@@ -108,9 +57,6 @@ Failed to compile.
 3:35  Warning: 'CookieOptions' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 7:3  Warning: 'req' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
 8:3  Warning: 'resHeaders' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/trpc/routers/admin.router.ts
-119:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./lib/trpc/routers/consultation.router.ts
 32:15  Warning: 'data' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
@@ -122,8 +68,22 @@ Failed to compile.
 ./lib/trpc/routers/patient.router.ts
 61:56  Warning: 'ctx' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
 
-./lib/trpc/routers/telemedicine.router.ts
-66:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Linting and checking validity of types  ..Failed to compile.
+
+./components/doctor/TodaySchedule.tsx:11:23
+Type error: Already included file name '/home/project/Gabriel-Family-Clinic-v2/components/ui/Badge.tsx' differs from file name '/home/project/Gabriel-Family-Clinic-v2/components/ui/badge.tsx' only in casing.
+  The file is in the program because:
+    Imported via "@/components/ui/Badge" from file '/home/project/Gabriel-Family-Clinic-v2/components/doctor/TodaySchedule.tsx'
+    Root file specified for compilation
+    Root file specified for compilation
+
+   9 | import customParseFormat from "dayjs/plugin/customParseFormat";
+  10 | import Link from "next/link";
+> 11 | import { Badge } from "@/components/ui/Badge"; // Assuming a Badge component exists
+     |                       ^
+  12 | import { cn } from "@/lib/utils";
+  13 |
+  14 | // Extend dayjs with the plugin needed to parse time strings like "10:30:00"
+Next.js build worker exited with code: 1 and signal: null
 
