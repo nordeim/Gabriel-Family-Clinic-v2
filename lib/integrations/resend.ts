@@ -1,8 +1,8 @@
 // lib/integrations/resend.ts
 import { Resend } from "resend";
 import { env } from "@/env";
-import { type EmailProvider } from "@/lib/notifications/types";
-import { ReactElement } from "react";
+import type { EmailProvider } from "@/lib/notifications/types";
+import type { ReactElement } from "react";
 
 class ResendEmailProvider implements EmailProvider {
   private client: Resend;

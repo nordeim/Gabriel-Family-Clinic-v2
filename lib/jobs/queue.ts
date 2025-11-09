@@ -1,7 +1,7 @@
 // lib/jobs/queue.ts
 "use server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { JobPayloads, JobType, JobRecord } from "./types";
+import type { JobPayloads, JobType, JobRecord } from "./types";
 
 const MAX_ATTEMPTS = 5;
 

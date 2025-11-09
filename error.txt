@@ -36,24 +36,8 @@ $ npm run build
 ./components/payment/CheckoutForm.tsx
 3:21  Warning: 'useState' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
-./lib/auth/AuthContext.tsx
-4:1  Warning: Imports "ReactNode" are only used as type.  @typescript-eslint/consistent-type-imports
-6:1  Warning: All imports in the declaration are only used as types. Use `import type`.  @typescript-eslint/consistent-type-imports
-
 ./lib/auth/actions.ts
 28:58  Warning: 'nric' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./lib/integrations/resend.ts
-5:1  Warning: All imports in the declaration are only used as types. Use `import type`.  @typescript-eslint/consistent-type-imports
-
-./lib/jobs/queue.ts
-4:1  Warning: All imports in the declaration are only used as types. Use `import type`.  @typescript-eslint/consistent-type-imports
-
-./lib/jobs/types.ts
-21:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
-
-./lib/notifications/types.ts
-2:1  Warning: All imports in the declaration are only used as types. Use `import type`.  @typescript-eslint/consistent-type-imports
 
 ./lib/trpc/context.ts
 3:35  Warning: 'CookieOptions' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
@@ -76,10 +60,51 @@ $ npm run build
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
  ✓ Linting and checking validity of types    
  ✓ Collecting page data    
+ ✓ Generating static pages (23/23)
+ ✓ Collecting build traces    
+ ✓ Finalizing page optimization    
 
-> Build optimization failed: found pages without a React Component as default export in 
-pages/admin/login
-pages/doctor/login
+Route (app)                                               Size     First Load JS
+┌ ƒ /api/auth/[...nextauth]                               0 B                0 B
+└ ƒ /api/trpc/[trpc]                                      0 B                0 B
++ First Load JS shared by all                             0 B
 
-See https://nextjs.org/docs/messages/page-without-valid-component for more info.
+Route (pages)                                             Size     First Load JS
+┌ ○ /                                                     959 B           203 kB
+├   /_app                                                 0 B             202 kB
+├ ○ /404                                                  181 B           202 kB
+├ ○ /admin/analytics                                      3.27 kB         207 kB
+├ ○ /admin/communications/broadcast                       1.69 kB         206 kB
+├ ○ /admin/dashboard                                      2.62 kB         206 kB
+├ ○ /admin/login                                          310 B           202 kB
+├ ○ /admin/reports/appointments                           1.67 kB         206 kB
+├ ○ /admin/users                                          2.35 kB         206 kB
+├ ƒ /api/cron/process-jobs                                0 B             202 kB
+├ ƒ /api/health                                           0 B             202 kB
+├ ƒ /api/trpc/[...trpc]                                   0 B             202 kB
+├ ƒ /api/webhooks/stripe                                  0 B             202 kB
+├ ○ /dashboard                                            648 B           205 kB
+├ ○ /dashboard/payments/pay/[appointmentId]               7.73 kB         224 kB
+├ ○ /dashboard/payments/success                           653 B           202 kB
+├ ○ /dashboard/profile/notifications                      919 B           205 kB
+├ ○ /dashboard/telemedicine/consultation/[appointmentId]  65.6 kB         269 kB
+├ ○ /dashboard/vaccinations                               656 B           205 kB
+├ ○ /doctor/consultations/[appointmentId]                 1.4 kB          205 kB
+├ ○ /doctor/dashboard                                     7.33 kB         211 kB
+├ ○ /doctor/login                                         312 B           202 kB
+├ ○ /doctor/patients/[patientId]/history                  1.38 kB         205 kB
+├ ○ /doctor/schedule                                      1.27 kB         205 kB
+├ ○ /health-screening                                     453 B           202 kB
+├ ○ /login                                                1.66 kB         206 kB
+└ ○ /register                                             33.5 kB         250 kB
++ First Load JS shared by all                             235 kB
+  ├ chunks/framework-ee1ebeba1a79078a.js                  44.8 kB
+  ├ chunks/main-60b8d188a750707c.js                       36.2 kB
+  ├ chunks/pages/_app-02c781b027c6b4fb.js                 119 kB
+  ├ css/eb4962a212002887.css                              32.7 kB
+  └ other shared chunks (total)                           1.79 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
 

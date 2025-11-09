@@ -1,9 +1,10 @@
 // @/lib/auth/AuthContext.tsx
 "use client";
 
-import React, { createContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { Session, User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface AuthContextType {

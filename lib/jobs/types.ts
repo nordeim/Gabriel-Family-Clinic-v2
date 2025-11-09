@@ -18,4 +18,4 @@ export interface JobRecord {
   last_error?: string | null;
 }
 
-export default {};
+// No default export — keep the file focused on type exports only.

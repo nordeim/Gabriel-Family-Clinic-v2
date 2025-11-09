@@ -1,5 +1,5 @@
 // lib/notifications/types.ts
-import { ReactElement } from "react";
+import type { ReactElement } from "react";
 
 export interface SmsProvider {
   sendSms(to: string, message: string): Promise<{ id: string }>;
