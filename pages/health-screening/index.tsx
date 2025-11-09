@@ -3,7 +3,7 @@ import { api } from "@/lib/trpc/client";
 // import { PackageCard } from "@/components/screening/PackageCard";
 
 export default function HealthScreeningPage() {
-  const { data: packages, isLoading } = api.health.getScreeningPackages.useQuery();
+  const { data: _packages, isLoading: _isLoading } = api.health.getScreeningPackages.useQuery();
 
   return (
     <div className="container mx-auto py-12">

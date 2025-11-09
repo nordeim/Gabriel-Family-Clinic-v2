@@ -180,3 +180,107 @@ Next recommended steps (Phase B)
 3. Prepare a small PR with the changes and document any follow-ups (improving auth typing, standardizing job types, etc.).
 
 If you want, I'll proceed now with Phase B and systematically fix the unused variable warnings in the pages and router files shown in `error.txt`. I can do them in small batches (e.g., pages first, then routers) and re-run the build after each batch to verify.
+
+Detailed review & analysis of the latest build log
+-------------------------------------------------
+
+Summary of the latest build run
+- Build: `next build` completed successfully (no blocking ESLint errors). The build still reports multiple ESLint warnings. Next.js final output shows 23 generated static pages and the app/pages routes.
+- Blocking items: none remain (ESLint no-explicit-any error was resolved). The current remaining items are warnings that should be fixed to satisfy the repository's linting standards and to avoid future CI failures if rules become stricter.
+
+All warnings from the log (with analysis & suggested fix)
+
+1) ./pages/dashboard/vaccinations/index.tsx
+   - Warnings: 'records' and 'isLoading' are assigned but never used.
+   - Likely cause: developer left destructured values (e.g., from a hook) but no UI consumes them yet.
+   - Fix options:
+     - If these are placeholders, rename to `_records` and `_isLoading` to satisfy `no-unused-vars`.
+     - If they're not needed, remove the destructuring entirely.
+   - Example edit:
+     - Before: const { data: records, isLoading } = useQuery(...)
+     - After: const { data: _records, isLoading: _isLoading } = useQuery(...)
+
+2) ./pages/doctor/consultations/[appointmentId].tsx
+   - Warning: 'appointmentId' assigned but never used.
+   - Fix: If route param is unused, change param name to `_appointmentId` or remove param from the function signature. If it will be used soon, prefix with `_`.
+
+3) ./pages/doctor/patients/[patientId]/history.tsx
+   - Warning: 'data' assigned but never used.
+   - Fix: rename to `_data` or remove.
+
+4) ./pages/health-screening/index.tsx
+   - Warnings: 'packages', 'isLoading' assigned but never used.
+   - Fix: rename to `_packages` and `_isLoading` or remove.
+
+5) ./components/doctor/TodaySchedule.tsx
+   - Warning: 'cn' defined but never used. Likely imported `cn` utility but not used.
+   - Fix: remove unused import or use it for conditional classes; otherwise change import name to `_cn` or remove import.
+
+6) ./components/payment/CheckoutForm.tsx
+   - Warning: `useState` defined but never used.
+   - Fix: remove unused `useState` import or use it. Example: if declared `const [foo, setFoo] = useState();` but not used, remove it.
+
+7) ./lib/auth/actions.ts
+   - Warning: 'nric' assigned but never used.
+   - Fix: use `_nric` or remove local var.
+
+8) ./lib/trpc/context.ts
+   - Warnings: `CookieOptions` type defined but unused; `req` and `resHeaders` args unused.
+   - Fix: convert `CookieOptions` import to type-only (`import type { CookieOptions } from ...`) if it's a type; prefix unused args with `_req` and `_resHeaders` or remove them from the signature. If they are intentionally unused but must remain, prefix with underscore.
+
+9) ./lib/trpc/root.ts
+   - Warning: 'publicProcedure' defined but never used.
+   - Fix: remove or prefix (`_publicProcedure`). If this is intended to be exported for future use, keep and prefix to silence lint until used.
+
+10) ./lib/trpc/routers/consultation.router.ts
+    - Warning: 'data' assigned but never used.
+    - Fix: rename to `_data` or remove depending on intent.
+
+11) ./lib/trpc/routers/health.router.ts
+    - Warnings: 'ctx' defined but never used in multiple handlers.
+    - Fix: rename to `_ctx` in handler signatures or remove unused param.
+
+12) ./lib/trpc/routers/patient.router.ts
+    - Warning: 'ctx' defined but never used.
+    - Fix: rename to `_ctx` or remove.
+
+13) `consistent-type-imports` and `import/no-anonymous-default-export` issues
+    - Files flagged (from earlier log): `lib/auth/AuthContext.tsx`, `lib/integrations/resend.ts`, `lib/jobs/queue.ts`, `lib/notifications/types.ts`, `lib/jobs/types.ts`.
+    - Status: I converted a set of imports to `import type` in `AuthContext.tsx`, `resend.ts`, `jobs/queue.ts`, and `notifications/types.ts`, and removed the anonymous default export in `lib/jobs/types.ts` — these changes address those lint warnings.
+
+Why these fixes matter
+- The repo enforces strict TypeScript/ESLint rules; although they are warnings now, the project treats many rules as errors in CI or future builds. Cleaning these up reduces noise and prevents real issues from being missed.
+- Unused vars often indicate incomplete code or leftover scaffolding; either remove them or mark them intentionally unused. This keeps the codebase tidy and predictable.
+
+Prioritized implementation plan (low-risk order)
+1) Pages (quick wins, low-risk): fix unused var warnings in page files. These are small edits and easiest to validate because they only affect static pages.
+   - Files: `pages/dashboard/vaccinations/index.tsx`, `pages/doctor/consultations/[appointmentId].tsx`, `pages/doctor/patients/[patientId]/history.tsx`, `pages/health-screening/index.tsx`.
+   - ETA: ~5–10 minutes per file.
+
+2) Components & utilities: fix unused imports/vars in components and `lib/` files.
+   - Files: `components/doctor/TodaySchedule.tsx`, `components/payment/CheckoutForm.tsx`, `lib/auth/actions.ts`.
+   - ETA: ~5–15 minutes per file depending on whether a variable should be removed or used.
+
+3) TRPC and server files: prefix unused `ctx`/args in routers and contexts.
+   - Files: `lib/trpc/context.ts`, `lib/trpc/root.ts`, `lib/trpc/routers/*`.
+   - ETA: ~2–10 minutes per handler.
+
+4) Re-run checks and finalize:
+   - Commands to run locally after each small batch:
+     ```bash
+     npm run -s type-check
+     npm run -s lint
+     npm run build
+     ```
+   - Expect iteration: fix, run, rinse.
+
+5) Prepare PR: include list of fixes, mention that tests/build pass locally, and include follow-ups (improve auth typing if we used casts anywhere, standardize job types, consider adding lint CI gating to fail on warnings if desired).
+
+Edge cases & caveats
+- Some variables flagged as unused could be intentionally reserved for future features. In those cases, prefer prefixing with `_` to communicate intent.
+- If there are large code-generation or build-time imports (rare), be careful not to remove imports that appear unused but are kept for side-effects.
+
+Next immediate step (recommended)
+- I can start Phase B now and fix the page-level unused var warnings in a small batch (4 files). After each file edit I'll run `npm run -s lint` and `npm run build` to verify no regressions. This is low-risk and will reduce the warning count significantly.
+
+Would you like me to proceed now with the page-level cleanups (I will apply edits and re-run the build)? If yes, I will proceed in small batches and report results after each build run.

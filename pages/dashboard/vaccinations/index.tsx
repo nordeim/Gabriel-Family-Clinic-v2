@@ -4,7 +4,7 @@ import { api } from "@/lib/trpc/client";
 // import { VaccinationRecordCard } from "@/components/vaccination/VaccinationRecordCard";
 
 export default function VaccinationsPage() {
-  const { data: records, isLoading } = api.health.getPatientVaccinations.useQuery();
+  const { data: _records, isLoading: _isLoading } = api.health.getPatientVaccinations.useQuery();
 
   return (
     <ProtectedRoute>

@@ -9,7 +9,7 @@ import { DoctorLayout } from "@/components/doctor/DoctorLayout";
 
 export default function ConsultationPage() {
   const router = useRouter();
-  const { appointmentId } = router.query;
+  const { appointmentId: _appointmentId } = router.query;
   
   // Fetch patient history and current appointment details here
 

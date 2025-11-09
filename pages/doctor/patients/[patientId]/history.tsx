@@ -10,7 +10,7 @@ export default function PatientHistoryPage() {
   const router = useRouter();
   const { patientId } = router.query;
   
-  const { data, isLoading } = api.consultation.getPatientHistory.useQuery(
+  const { data: _data, isLoading } = api.consultation.getPatientHistory.useQuery(
     { patientId: patientId as string },
     { enabled: !!patientId }
   );

@@ -16,20 +16,6 @@ $ npm run build
 > [PWA]   scope: /
  ✓ Compiled successfully
 
-./pages/dashboard/vaccinations/index.tsx
-7:17  Warning: 'records' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-7:26  Warning: 'isLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./pages/doctor/consultations/[appointmentId].tsx
-12:11  Warning: 'appointmentId' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./pages/doctor/patients/[patientId]/history.tsx
-13:11  Warning: 'data' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
-./pages/health-screening/index.tsx
-6:17  Warning: 'packages' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-6:27  Warning: 'isLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
-
 ./components/doctor/TodaySchedule.tsx
 12:10  Warning: 'cn' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
@@ -106,5 +92,4 @@ Route (pages)                                             Size     First Load JS
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
-
 
