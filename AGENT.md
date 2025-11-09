@@ -177,6 +177,29 @@ If you want, I can now:
 
 Select an action (stage files / inventory / create bootstrap script / run tests).// filepath: /home/project/Gabriel-Family-Clinic-v2/AGENT.md
 
+---
+
+## Notes — recent repo updates & current status (round 1)
+
+- Date: 2025-11-09 (changes applied during troubleshooting round 1).
+- Build: `next build` now completes successfully in this repository. The build step runs ESLint and TypeScript checks; remaining items are non-blocking lint warnings (mostly unused variable warnings) that are tracked for follow-up.
+- NextAuth: The NextAuth handler now uses the typed `authConfig` from `src/server/auth/config.ts`. The API route file is at `src/app/api/auth/[...nextauth]/route.ts` and no longer uses `as any`.
+- Pages: Two minimal redirect pages were added to satisfy Next.js page exports and avoid build-time page-collection errors:
+   - `pages/admin/login.tsx` — client-side redirect to `/login`
+   - `pages/doctor/login.tsx` — client-side redirect to `/login`
+- Types & imports: Several modules were updated to use `import type` for type-only imports (notably `lib/auth/AuthContext.tsx`, `lib/integrations/resend.ts`, `lib/jobs/queue.ts`, `lib/notifications/types.ts`).
+- Jobs typing: `lib/jobs/types.ts` now only exports types (no anonymous default export). `lib/jobs/queue.ts` imports those types with `import type`.
+- Troubleshooting docs added:
+   - `docs/troubleshooting/latest-build-error-review.md`
+   - `docs/troubleshooting/build-fix-round-1-summary.md`
+- Linting policy notes: the repository enforces several strict ESLint rules in CI and during `next build`:
+   - `@typescript-eslint/no-explicit-any` (avoid `any` casts)
+   - `@typescript-eslint/consistent-type-imports` (use `import type` for types)
+   - `import/no-anonymous-default-export`
+   - `@typescript-eslint/no-unused-vars` configured to allow names matching `/^_/u` (prefix unused vars with `_`)
+
+If you want me to continue, I can (A) fix remaining `no-unused-vars` warnings in small batches, (B) prepare a PR with the round-1 fixes and docs, or (C) run a full file-level inventory and generate a prioritized TODO list. Tell me which and I'll proceed.
+
 # AGENT — Single Source of Truth for an AI Coding Agent
 
 Purpose: Provide a compact, accurate, and actionable briefing so an AI coding agent (e.g., Claude Code, OpenAI Codex) can start contributing to Gabriel Family Clinic v2.0 with minimal human supervision.

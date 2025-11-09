@@ -100,3 +100,27 @@ Would you like me to:
 - C) Create the recommended bootstrap script and CI additions as a PR?
 
 Choose one option (A / B / C) and I will proceed.
+
+---
+
+## Recent changes and current repo status (after troubleshooting round 1)
+
+- Date: 2025-11-09 — summary of fixes applied during a focused troubleshooting session.
+- Build status: `next build` now runs successfully in this workspace. The build step runs ESLint and TypeScript checks. A small number of non-blocking ESLint warnings remain (mainly unused variable warnings) and are tracked as Phase B follow-ups.
+- Key code edits made during the round:
+  - NextAuth route: removed `as any` and now constructs the NextAuth handler using `authConfig` typed in `src/server/auth/config.ts`. The route file is `src/app/api/auth/[...nextauth]/route.ts`.
+  - Page redirects: added `pages/admin/login.tsx` and `pages/doctor/login.tsx` which perform client-side redirects to `/login` to satisfy Next.js page export requirements.
+  - Type-only imports: updated several modules to use `import type` for type-only imports (e.g., `lib/auth/AuthContext.tsx`, `lib/integrations/resend.ts`, `lib/jobs/queue.ts`, `lib/notifications/types.ts`).
+  - Jobs types: removed anonymous default export in `lib/jobs/types.ts` and kept typed exports (`JobPayloads`, `JobType`, `JobRecord`) to satisfy lint.
+  - Documentation: added troubleshooting artifacts under `docs/troubleshooting/` capturing the failure, analysis, and planned follow-ups.
+
+- Lint & policy notes:
+  - The repo enforces strict ESLint rules during build: avoid `any` casts, prefer `import type` for types, disallow anonymous default exports, and require unused vars to be prefixed with `_` if intentionally unused.
+
+## Recommended next steps (short)
+
+1. Fix remaining `no-unused-vars` warnings in small batches (components, then trpc routers). Prefer prefixing intentionally unused variables with `_` to indicate intent.
+2. Re-run the validation cycle (type-check, lint, build) after each batch.
+3. Prepare a small PR containing grouped commits and link to `docs/troubleshooting/` for reviewer context.
+
+If you want, I can implement step 1 now (components batch) and validate. Otherwise this document captures the current codebase snapshot.
