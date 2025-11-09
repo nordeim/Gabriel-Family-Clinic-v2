@@ -40,6 +40,34 @@ function ScheduleSkeleton() {
 export function TodaySchedule() {
   const { data, isLoading, error } = api.doctor.getDashboardSummary.useQuery();
 
+  const extractPatientName = (patients: unknown): string | undefined => {
+    if (Array.isArray(patients)) {
+      const first = patients[0];
+      if (first && typeof first === "object" && "users" in first) {
+        const users = (first as Record<string, unknown>).users;
+        if (Array.isArray(users)) {
+          const u0 = users[0];
+          if (u0 && typeof u0 === "object" && "full_name" in u0) return String((u0 as Record<string, unknown>).full_name);
+        } else if (users && typeof users === "object" && "full_name" in users) {
+          return String((users as Record<string, unknown>).full_name);
+        }
+      }
+      return undefined;
+    }
+
+    if (patients && typeof patients === "object" && "users" in patients) {
+      const users = (patients as Record<string, unknown>).users;
+      if (Array.isArray(users)) {
+        const u0 = users[0];
+        if (u0 && typeof u0 === "object" && "full_name" in u0) return String((u0 as Record<string, unknown>).full_name);
+      } else if (users && typeof users === "object" && "full_name" in users) {
+        return String((users as Record<string, unknown>).full_name);
+      }
+    }
+
+    return undefined;
+  };
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'scheduled':
@@ -77,9 +105,7 @@ export function TodaySchedule() {
             {data.appointments.map((appt) => {
               // appt.patients can be returned from Supabase as an array or as an object
               // depending on how the select() is written. Normalize safely here.
-              const patientName = Array.isArray(appt.patients)
-                ? appt.patients[0]?.users?.[0]?.full_name
-                : (appt.patients as any)?.users?.full_name;
+              const patientName = extractPatientName(appt.patients);
 
               return (
                 <li key={appt.id}>
