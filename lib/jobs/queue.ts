@@ -1,12 +1,13 @@
 // lib/jobs/queue.ts
 "use server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { JobPayloads, JobType } from "./types";
+import { JobPayloads, JobType, JobRecord } from "./types";
 
 const MAX_ATTEMPTS = 5;
 
-// All job handlers are defined in this map.
-const jobHandlers = {
+// All job handlers are defined in this map. Use a permissive record type so handlers
+// can be added incrementally. Replace with concrete types when job types are known.
+const jobHandlers: Record<string, (payload: unknown) => Promise<void>> = {
   // Add handlers here
 };
 
@@ -42,21 +43,22 @@ export class JobProcessor {
       return; // No job found
     }
 
-    const handler = jobHandlers[job.queue as JobType];
+  const jobRecord = job as unknown as JobRecord;
+  const handler = jobHandlers[jobRecord.queue as JobType];
     if (!handler) {
-      await this.markAsFailed(job.id, "No handler found for queue.");
+      await this.markAsFailed(jobRecord.id, "No handler found for queue.");
       return;
     }
 
     try {
-      await handler(job.payload);
-      await this.markAsCompleted(job.id);
+  await handler(jobRecord.payload);
+  await this.markAsCompleted(jobRecord.id);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
-      if (job.attempts + 1 >= MAX_ATTEMPTS) {
-        await this.markAsFailed(job.id, message);
+      if (jobRecord.attempts + 1 >= MAX_ATTEMPTS) {
+        await this.markAsFailed(jobRecord.id, message);
       } else {
-        await this.retryJob(job.id, message);
+        await this.retryJob(jobRecord.id, message);
       }
     }
   }

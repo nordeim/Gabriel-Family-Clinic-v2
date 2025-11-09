@@ -113,8 +113,9 @@ export const adminRouter = router({
 
       // 2. Enqueue a job for each eligible patient.
       for (const patient of patients) {
-        // The user profile is nested inside the patient data
-        const user = patient.users;
+        // The user profile is nested inside the patient data. Supabase may
+        // return nested relations as arrays depending on the query, so normalize.
+        const user = Array.isArray(patient.users) ? patient.users[0] : patient.users;
         if (!user) continue;
 
         type NotificationPrefs = {
@@ -122,7 +123,7 @@ export const adminRouter = router({
           email?: { enabled?: boolean };
         } | null | undefined;
 
-        const prefs = user.notification_preferences as NotificationPrefs; // Narrowed type for notification preferences
+  const prefs = user.notification_preferences as NotificationPrefs; // Narrowed type for notification preferences
 
         if (input.channel === "sms" && prefs?.sms?.enabled && user.phone) {
           jobPromises.push(enqueueJob("send-sms", { to: user.phone, message: input.message }));

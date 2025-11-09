@@ -1,6 +1,6 @@
 // src/server/auth/config.ts
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import { type DefaultSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
 import { db } from "~/server/db";
@@ -43,7 +43,7 @@ export const authConfig = {
   ],
 
   callbacks: {
-    session: ({ session, user }) => ({
+    session: ({ session, user }: { session: any; user: any }) => ({
       ...session,
       user: {
         ...session.user,
@@ -59,5 +59,5 @@ export const authConfig = {
    */
   trustHost: true,
   basePath: "/api/auth",
-} satisfies NextAuthConfig;
+};
 

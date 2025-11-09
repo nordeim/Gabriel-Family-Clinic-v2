@@ -6,8 +6,8 @@ import { env } from "@/env";
  * A singleton instance of the Stripe SDK, initialized with the secret key.
  * This should never be exposed to the client-side.
  */
-export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-04-10", // Use the latest API version
+export const stripe = new Stripe(env.STRIPE_SECRET_KEY ?? "", {
+  apiVersion: "2024-06-20", // Align with installed stripe types
   typescript: true,
 });
 
@@ -50,7 +50,7 @@ export class StripeService {
     return stripe.webhooks.constructEvent(
       body,
       signature,
-      env.STRIPE_WEBHOOK_SECRET
+      env.STRIPE_WEBHOOK_SECRET ?? ""
     );
   }
 

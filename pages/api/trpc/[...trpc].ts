@@ -11,7 +11,9 @@ const handler = (req: NextRequest) =>
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    createContext: () => createContext({ req, resHeaders: new Headers() }),
+    // Pass the context factory directly; the fetch adapter will call it with
+    // the required `info` parameter.
+    createContext: createContext,
     onError:
       env.NODE_ENV === "development"
         ? ({ path, error }) => {

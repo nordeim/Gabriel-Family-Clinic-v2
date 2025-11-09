@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@mantine/core";
 import { MessageSquare } from "lucide-react";
 import { api } from "@/lib/trpc/client";
-import { Textarea } from "@/components/ui/Textarea"; // Assuming this component exists
+import { Textarea } from "@/components/ui/textarea"; // Use canonical lowercase path
 import { StarRating } from "@/components/ui/StarRating"; // Assuming this component exists
 
 export function FeedbackWidget() {
@@ -84,7 +84,7 @@ export function FeedbackWidget() {
             <Button
               className="w-full"
               onClick={handleSubmit}
-              isLoading={submitMutation.isLoading}
+              isLoading={(submitMutation as any).isLoading}
             >
               Submit Feedback
             </Button>

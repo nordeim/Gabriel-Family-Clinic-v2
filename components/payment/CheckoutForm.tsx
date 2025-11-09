@@ -10,29 +10,31 @@ import { PriceBreakdown } from "./PriceBreakdown";
 import { env } from "@/env";
 
 // Load Stripe once outside of the component to avoid recreating it on every render.
-const stripePromise = loadStripe(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "");
 
 interface CheckoutFormProps {
   appointmentId: string;
 }
 
 export function CheckoutForm({ appointmentId }: CheckoutFormProps) {
-  const {
-    data,
-    isLoading: isCreatingIntent,
-    error,
-  } = api.payment.createPaymentIntent.useMutation();
+  const createPaymentIntent = api.payment.createPaymentIntent.useMutation();
+
+  const { data, error } = {
+    data: createPaymentIntent.data,
+    error: createPaymentIntent.error,
+  };
+  const isCreatingIntent = (createPaymentIntent as any).isLoading;
 
   useEffect(() => {
     // Automatically create the payment intent when the component mounts
     if (appointmentId) {
-      data.mutate({ appointmentId });
+      createPaymentIntent.mutate({ appointmentId });
     }
-  }, [appointmentId, data.mutate]);
+  }, [appointmentId, createPaymentIntent]);
   
-  const { clientSecret, totalAmount, subsidyAmount, originalAmount } = data?.data ?? {};
+  const { clientSecret, totalAmount, subsidyAmount, originalAmount } = data ?? {};
 
-  const options = { clientSecret };
+  const options = clientSecret ? { clientSecret } : undefined;
 
   if (isCreatingIntent) {
     return <div className="flex justify-center p-8"><LoadingSpinner /></div>;

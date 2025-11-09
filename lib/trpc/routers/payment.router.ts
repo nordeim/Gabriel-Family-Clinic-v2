@@ -24,14 +24,19 @@ export const paymentRouter = router({
         });
       }
 
-      const consultationFee = appointment.consultation_fee ?? 0;
+  const consultationFee = appointment.consultation_fee ?? 0;
       if (consultationFee <= 0) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "No payment is required for this appointment." });
       }
 
       // 2. Calculate final amount with CHAS subsidy
+      // Supabase `select(...!inner(...))` can return an array for nested relations.
+      const patient = Array.isArray(appointment.patients)
+        ? appointment.patients[0]
+        : (appointment.patients as any);
+
       const { subsidyAmount, finalAmount } = CHASCalculator.calculate({
-        chasCardType: appointment.patients.chas_card_type,
+        chasCardType: patient?.chas_card_type,
         consultationFee,
       });
       
@@ -42,7 +47,7 @@ export const paymentRouter = router({
         .from("payments")
         .insert({
           appointment_id: input.appointmentId,
-          patient_id: appointment.patients.id,
+          patient_id: patient?.id,
           clinic_id: "...", // Fetch from appointment
           subtotal: consultationFee,
           chas_subsidy_amount: subsidyAmount,
@@ -68,7 +73,7 @@ export const paymentRouter = router({
           {
             appointmentId: input.appointmentId,
             paymentId: paymentRecord.id, // Our internal payment ID
-            patientId: appointment.patients.id,
+            patientId: patient?.id,
           }
         );
 
