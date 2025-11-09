@@ -16,8 +16,6 @@ $ npm run build
 > [PWA]   scope: /
  ✓ Compiled successfully
 
-Failed to compile.
-
 ./pages/dashboard/vaccinations/index.tsx
 7:17  Warning: 'records' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 7:26  Warning: 'isLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
@@ -75,7 +73,13 @@ Failed to compile.
 ./lib/trpc/routers/patient.router.ts
 61:56  Warning: 'ctx' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
 
-./src/app/api/auth/[...nextauth]/route.ts
-4:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+ ✓ Linting and checking validity of types    
+ ✓ Collecting page data    
+
+> Build optimization failed: found pages without a React Component as default export in 
+pages/admin/login
+pages/doctor/login
+
+See https://nextjs.org/docs/messages/page-without-valid-component for more info.
+
