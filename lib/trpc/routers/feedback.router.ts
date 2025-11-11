@@ -23,9 +23,16 @@ export const feedbackRouter = router({
         page_url: input.pageUrl,
         user_agent: input.userAgent,
       });
-
+ 
       if (error) {
-        console.error("Failed to save user feedback:", error);
+        // PDPA: do not log full feedback text or other PHI. If logging is added,
+        // include only technical details (user_id, page_url, error codes/messages).
+        console.error("Failed to save user feedback", {
+          userId: ctx.user.id,
+          pageUrl: input.pageUrl,
+          message: error.message,
+          code: error.code,
+        });
         // Use TRPC-friendly error signaling
         throw new (await import("@trpc/server")).TRPCError({
           code: "INTERNAL_SERVER_ERROR",
