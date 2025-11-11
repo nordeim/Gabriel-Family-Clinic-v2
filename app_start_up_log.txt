@@ -1,0 +1,72 @@
+$ npm run build
+
+> gabriel-family-clinic-v2@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.33
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: /home/project/Gabriel-Family-Clinic-v2/node_modules/next-pwa/register.js
+> [PWA] Service worker: /home/project/Gabriel-Family-Clinic-v2/public/sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+ ✓ Compiled successfully
+ ✓ Linting and checking validity of types    
+ ✓ Collecting page data    
+ ✓ Generating static pages (26/26)
+ ✓ Collecting build traces    
+ ✓ Finalizing page optimization    
+
+Route (app)                                               Size     First Load JS
+┌ ○ /                                                     7 kB            102 kB
+├ ○ /_not-found                                           873 B          88.3 kB
+├ ƒ /api/auth/[...nextauth]                               0 B                0 B
+├ ƒ /api/trpc/[trpc]                                      0 B                0 B
+└ ○ /booking                                              4.25 kB         130 kB
++ First Load JS shared by all                             87.4 kB
+  ├ chunks/117-8720ea6286060636.js                        31.7 kB
+  ├ chunks/fd9d1056-c0b6c6cf32ef7794.js                   53.6 kB
+  └ other shared chunks (total)                           2.03 kB
+
+Route (pages)                                             Size     First Load JS
+┌   /_app                                                 0 B             202 kB
+├ ○ /admin/analytics                                      3.27 kB         207 kB
+├ ○ /admin/communications/broadcast                       1.69 kB         206 kB
+├ ○ /admin/dashboard                                      2.62 kB         207 kB
+├ ○ /admin/login                                          310 B           202 kB
+├ ○ /admin/reports/appointments                           1.67 kB         206 kB
+├ ○ /admin/users                                          2.35 kB         206 kB
+├ ƒ /api/cron/process-jobs                                0 B             202 kB
+├ ƒ /api/health                                           0 B             202 kB
+├ ƒ /api/trpc/[...trpc]                                   0 B             202 kB
+├ ƒ /api/webhooks/stripe                                  0 B             202 kB
+├ ○ /dashboard                                            647 B           205 kB
+├ ○ /dashboard/payments/pay/[appointmentId]               7.73 kB         224 kB
+├ ○ /dashboard/payments/success                           653 B           202 kB
+├ ○ /dashboard/profile/notifications                      919 B           205 kB
+├ ○ /dashboard/telemedicine/consultation/[appointmentId]  65.6 kB         269 kB
+├ ○ /dashboard/vaccinations                               656 B           205 kB
+├ ○ /doctor/consultations/[appointmentId]                 1.4 kB          205 kB
+├ ○ /doctor/dashboard                                     7.33 kB         211 kB
+├ ○ /doctor/login                                         312 B           202 kB
+├ ○ /doctor/patients/[patientId]/history                  1.38 kB         205 kB
+├ ○ /doctor/schedule                                      1.27 kB         205 kB
+├ ○ /health-screening                                     453 B           202 kB
+├ ○ /legacy-home                                          967 B           203 kB
+├ ○ /login                                                1.66 kB         206 kB
+└ ○ /register                                             33.5 kB         250 kB
++ First Load JS shared by all                             236 kB
+  ├ chunks/framework-ee1ebeba1a79078a.js                  44.8 kB
+  ├ chunks/main-1e031fa8943bce98.js                       36.3 kB
+  ├ chunks/pages/_app-48c02b5c041ea51e.js                 119 kB
+  ├ css/e76d17b93ed076a0.css                              34 kB
+  └ other shared chunks (total)                           1.81 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
