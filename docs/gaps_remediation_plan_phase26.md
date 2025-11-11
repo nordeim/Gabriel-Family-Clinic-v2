@@ -32,7 +32,7 @@ Current safe state
 Planned resolution for Jest and logging (next steps, not executed here)
 
 Because the dependency resolver is strict, the correct approach is:
-
+npm install --save-dev jest @types/jest ts-jest --legacy-peer-deps
 1) Use existing test tooling or align Jest install with constraints:
 - Options for the next patch (choose one when applying):
   - Install with legacy peer deps:
