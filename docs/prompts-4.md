@@ -13,3 +13,7 @@ awesome job with your meticulous planning and execution! as a major checkpoint, 
 ---
 
 awesome job with your meticulous planning and execution! as a major checkpoint, please meticulously review GitHub repo `README.md` and `AGENT.md` to be consistent and closely aligned with the newest state of the project codebase after the recent rounds of changes, updates and fixes. Please meticulously plan to collate and consolidate recent codebase changes and updates and then update the information in `README.md` and `AGENT.md` to keep them in sync and in alignment with new codebase reality to avoid confusion for new contributors or another coding agent working on future PRs.
+
+---
+
+awesome job with your meticulous planning and execution! let us similarly align `Project_Architecture_Document.md` as well with the same information. Please meticulously review and then update the PAD accordingly to keep alignment with the current codebase reality and state (recent changes, updates and fixes).

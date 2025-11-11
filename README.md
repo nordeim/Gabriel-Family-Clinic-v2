@@ -31,25 +31,27 @@ Gabriel Family Clinic v2.0 is a comprehensive, cloud-native healthcare managemen
 <td>
 
 ### Frontend
-- **Framework**: [Next.js 14.2.5](https://nextjs.org/)
-- **Language**: [TypeScript 5.5.3](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS 3.4.6](https://tailwindcss.com/)
-- **UI Library**: [Mantine 7.11.1](https://mantine.dev/)
-- **State**: [Zustand 4.5.4](https://zustand-demo.pmnd.rs/)
-- **Forms**: [React Hook Form 7.52.1](https://react-hook-form.com/)
-- **Validation**: [Zod 3.23.8](https://zod.dev/)
+- **Framework**: [Next.js 14.2.x](https://nextjs.org/) (App Router + legacy Pages where needed)
+- **Language**: [TypeScript 5.9.x](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS 3.4.x](https://tailwindcss.com/)
+- **UI Library**: [Mantine 7.x](https://mantine.dev/)
+- **State**: [Zustand 4.x](https://zustand-demo.pmnd.rs/)
+- **Forms**: [React Hook Form 7.x](https://react-hook-form.com/)
+- **Validation**: [Zod 3.x](https://zod.dev/)
 
 </td>
 <td>
 
 ### Backend
 - **Runtime**: [Node.js 20.x](https://nodejs.org/)
-- **API**: [tRPC 11.0.0-rc.464](https://trpc.io/)
-- **Database**: [PostgreSQL 15+](https://www.postgresql.org/)
-- **BaaS**: [Supabase](https://supabase.com/)
-- **Auth**: [Supabase Auth](https://supabase.com/docs/guides/auth)
-- **Storage**: [Supabase Storage](https://supabase.com/storage)
-- **Realtime**: [Supabase Realtime](https://supabase.com/realtime)
+- **API**:
+  - [tRPC 11.x](https://trpc.io/) for type-safe RPC between frontend and backend
+  - Next.js API routes for auth and webhooks
+- **Database**: [PostgreSQL 15+](https://www.postgresql.org/) (hosted via Supabase)
+- **Auth**:
+  - [NextAuth](https://next-auth.js.org/) + Prisma as the SINGLE source of truth
+  - Supabase is used strictly as managed Postgres (not for auth identities)
+- **Storage/Realtime**: Supabase (where needed)
 
 </td>
 </tr>
@@ -57,18 +59,20 @@ Gabriel Family Clinic v2.0 is a comprehensive, cloud-native healthcare managemen
 <td>
 
 ### Infrastructure
-- **Hosting**: [Vercel](https://vercel.com/)
+- **Hosting**: [Vercel](https://vercel.com/) or compatible Node.js hosting
 - **CI/CD**: [GitHub Actions](https://github.com/features/actions)
-- **Error Tracking**: [Sentry](https://sentry.io/)
+- **PWA**: [next-pwa](https://github.com/shadowwalker/next-pwa) (service worker + offline)
+- **Error Tracking**: (Pluggable; integrate Sentry or similar if required)
 
 </td>
 <td>
 
 ### Integrations
-- **Payments**: [Stripe](https://stripe.com/)
-- **SMS**: [Twilio](https://www.twilio.com/)
-- **Email**: [Resend](https://resend.com/)
-- **Video**: [Daily.co](https://daily.co/)
+- **Payments**: [Stripe](https://stripe.com/) — webhooks + typed payment router
+- **SMS**: [Twilio](https://www.twilio.com/) (via integration wrapper)
+- **Email**: [Resend](https://resend.com/) (via integration wrapper)
+- **Video**: [Daily.co](https://daily.co/) — telemedicine sessions
+- All external calls wrapped to support PDPA-safe logging and mock modes.
 
 </td>
 </tr>
@@ -101,22 +105,25 @@ npm install
 
 ### 3. Crucial: Set Up Environment Variables
 
-This project uses a strict environment variable validation system. The application will not build or run until you provide the necessary keys.
+This project uses a strict environment variable validation system (`src/env.js`). The application will not build or run until you provide the necessary keys.
 
 1.  **Create your local environment file:**
     ```bash
     cp .env.example .env.local
     ```
 
-2.  **Populate `.env.local` with your Supabase credentials:**
+2.  **Populate `.env.local` with required secrets:**
     *   Log in to your [Supabase Dashboard](https://app.supabase.com).
     *   Go to your project's **Settings > API**.
-    *   Find the following values and copy them into your `.env.local` file:
-        *   `NEXT_PUBLIC_SUPABASE_URL` (under Project URL)
-        *   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (under Project API Keys, use the `anon` `public` key)
-        *   `SUPABASE_SERVICE_ROLE_KEY` (under Project API Keys, use the `service_role` `secret` key)
-    *   Go to your project's **Settings > Database > Connection string > URI**.
-    *   Copy the full connection string and paste it as the value for `DATABASE_URL`. Remember to replace `[YOUR-PASSWORD]` with your actual database password.
+    *   Set at minimum:
+        *   `NEXT_PUBLIC_SUPABASE_URL`
+        *   `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+        *   `SUPABASE_SERVICE_ROLE_KEY`
+        *   `DATABASE_URL`
+        *   `APP_ENCRYPTION_KEY`
+    *   Configure NextAuth / OAuth provider secrets as needed:
+        *   `AUTH_DISCORD_ID`, `AUTH_DISCORD_SECRET` (for the sample provider)
+    *   Never expose `SUPABASE_SERVICE_ROLE_KEY` or other server secrets to the client.
 
 3.  **Generate an Encryption Key:**
     *   Run the following command in your terminal:
@@ -278,22 +285,23 @@ npm run type-check
 
 ### Testing
 
+The current codebase is wired for:
+
 ```bash
-# Run all tests
+# Lint & type-check (recommended before PRs)
+npm run lint
+npm run type-check
+
+# Unit / integration tests (Jest scaffolding in progress)
 npm test
 
-# Run unit tests
-npm run test:unit
-
-# Run integration tests
-npm run test:integration
-
-# Run E2E tests
+# E2E tests (Playwright)
 npm run test:e2e
-
-# Generate coverage report
-npm run test:coverage
 ```
+
+Notes:
+- Jest is configured via [`jest.config.cjs`](jest.config.cjs:1) for `tests/server/**/*.test.ts`.
+- Some suites are scaffolds; contributors should expand coverage following existing patterns.
 
 ### Commit Convention
 

@@ -8,27 +8,44 @@ Prepared by: GitHub Copilot
 ---
 
 ## 1) Project overview (one-paragraph)
-Gabriel Family Clinic v2.0 is a Next.js TypeScript full-stack application that uses:
-- NextAuth + Prisma as the primary identity and session system
-- Supabase-hosted Postgres (with SQL migrations, RLS, and functions) as the core database
-- tRPC for a type-safe API
+Gabriel Family Clinic v2.0 is a Next.js 14.2 TypeScript full-stack application that uses:
+- NextAuth + Prisma as the SINGLE source of truth for identity and sessions
+- Supabase-hosted Postgres (with SQL migrations, RLS, and functions) as the core database engine (not auth)
+- tRPC v11 for a type-safe API between frontend and backend
 - Mantine + Tailwind for UI
-- Stripe/Twilio/Resend for payments and notifications
-It follows repository + service patterns, uses Zod for validation, has database migrations/seeds, and targets elderly-friendly UX, security/compliance (PDPA & MOH), and maintainability.
+- Stripe/Twilio/Resend/Daily as pluggable integrations for payments, notifications, and telemedicine
+It follows repository + service patterns, uses Zod for validation, enforces strict ESLint/TS rules, and targets elderly-friendly UX plus strong PDPA/MOH-aligned security and maintainability.
 
 ---
 
 ## 2) Workspace layout & entry points (what to open first)
-- Root files: package.json, .env.example, docker-compose.yml, README.md
-- Primary source: src/
-  - src/pages/_app.tsx — app wrapper (providers)
-  - src/pages/api/trpc/[...trpc].ts — tRPC handler (server entry)
-  - src/lib/trpc/server.ts & src/lib/trpc/client.ts — tRPC server/client
-  - src/lib/database/supabase-client.ts — Supabase client (DB access)
-  - src/services/ — business logic services (appointment-service.ts, etc.)
-  - src/components/ — UI components by feature
-- Database: database/migrations/ and database/seeds/
-- Tests: tests/ (unit/e2e references)
+- Root files:
+  - package.json
+  - .env.example
+  - README.md
+  - AGENT.md
+- Runtime source (Next.js 14 App + Pages):
+  - src/app/
+    - layout.tsx — root layout
+    - page.tsx — primary landing page
+    - api/auth/[...nextauth]/route.ts — NextAuth handler
+    - api/trpc/[trpc]/route.ts — tRPC handler
+  - pages/ (legacy Pages Router routes)
+    - dashboard/*, admin/*, doctor/*, etc. — feature pages wired via tRPC and components
+    - api/webhooks/stripe — Stripe webhook entrypoint
+- Core libraries:
+  - lib/trpc/ — tRPC client/server wiring and feature routers
+  - lib/auth/ — NextAuth helpers and context
+  - lib/integrations/ — Stripe, Twilio, Resend, Daily wrappers
+  - lib/jobs/ — jobs queue types and processor backed by DB
+  - lib/supabase/ — server-side Supabase clients (DB only)
+  - types/ — shared domain and DB types (PaymentRecord, TelemedicineSessionRecord, JobRecord, etc.)
+- Database:
+  - database/migrations/ — SQL migrations (idempotent, ordered)
+  - database/seeds/ — seed data for dev
+- Tests:
+  - tests/e2e/ — Playwright E2E specs
+  - tests/server/ — Jest server-side test scaffolds (Jest config in jest.config.cjs)
 
 Open order for onboarding:
 1. README.md (dev setup)
@@ -42,15 +59,18 @@ Open order for onboarding:
 ## 3) Environment & how to run locally (must-have steps)
 1. Copy env template:
    - cp .env.example .env.local
-2. Populate the following with a dev Supabase project:
+2. Populate `.env.local` with:
    - NEXT_PUBLIC_SUPABASE_URL
    - NEXT_PUBLIC_SUPABASE_ANON_KEY
    - SUPABASE_SERVICE_ROLE_KEY
    - DATABASE_URL
    - APP_ENCRYPTION_KEY (openssl rand -base64 32)
+   - AUTH_DISCORD_ID / AUTH_DISCORD_SECRET (or your chosen NextAuth providers)
+   - Other third-party keys (Stripe/Twilio/Resend/Daily) as needed
+   - Never expose server-side secrets (e.g. SUPABASE_SERVICE_ROLE_KEY) to the client.
 3. Install:
    - npm install
-4. Migrate + seed:
+4. Migrate + seed (if using the SQL migrations/seeds flow in this repo):
    - npm run db:run-migrations
    - npm run db:run-seeds
 5. Type-check, lint, test:
@@ -77,22 +97,40 @@ Notes:
 ---
 
 ## 5) Architecture & patterns to follow when making changes
-- Separation: Controllers (pages/api or tRPC routers) should be thin; business logic belongs in services.
-- Data access: Use repositories (src/lib/database/queries or repository classes) for DB operations.
-- Notifications: Use NotificationFactory to instantiate SMS/Email/WhatsApp providers.
-- Transactions: For multi-step DB changes, use DB transactions where possible to preserve consistency.
-- RLS & security: Assume Row-Level Security is enabled — ensure procedures use authenticated user context and least privilege.
+- Separation:
+  - Controllers (Next.js route handlers, pages/api, tRPC routers) stay thin.
+  - Business logic lives in service modules and lib/ helpers.
+- Data access:
+  - Prefer typed repositories / queries.
+  - Supabase client is used strictly as a Postgres client from the server.
+- Notifications:
+  - Use integration wrappers (Twilio/Resend/etc.) behind a factory.
+- Transactions:
+  - For multi-step changes (e.g. booking + payment), use DB transactions or stored procedures.
+- RLS & security:
+  - Assume RLS is (or will be) enabled.
+  - Design queries and functions to respect least-privilege and tenant/patient scoping.
 - Auth & identity (CRITICAL, UPDATED 2025-11-11):
-  - NextAuth + Prisma is the SINGLE source of truth for application identity and sessions.
-  - Supabase is used as the managed Postgres engine (and optional storage/realtime), not as a separate auth system.
-  - All domain tables that reference a user (e.g. clinic.users, clinic.patients, clinic.doctors, payments, telemedicine_sessions, user_feedback) MUST ultimately link back to the NextAuth/Prisma user id (directly or via a well-defined mapping), not an independent Supabase Auth identity.
+  - NextAuth + Prisma is the SINGLE source of truth for identity and sessions.
+  - Supabase is:
+    - Managed Postgres (clinic.*, booking.*, webhook.*, etc.)
+    - Optional Storage/Realtime — NOT an auth authority.
+  - All user-bound records (patients, doctors, payments, telemedicine_sessions, user_feedback, etc.)
+    MUST ultimately reference the NextAuth/Prisma user id (directly or via a clear mapping).
 
 ---
 
 ## 6) Tests, CI & quality gates
-- Run unit tests with npm test (Jest). E2E uses Playwright (npm run test:e2e).
-- CI should run: type-check, lint, unit tests, and (optionally) integration tests against a test DB.
-- Write unit tests for services and repository logic. Mock external integrations (Stripe/Twilio/Resend) using dependency injection.
+- Jest:
+  - Configured via [`jest.config.cjs`](jest.config.cjs:1) for `tests/server/**/*.test.ts`.
+  - Focus: server-side logic, PDPA-safe tests (no real PHI).
+- Playwright:
+  - E2E tests under tests/e2e/ (`npm run test:e2e`).
+- CI expectations:
+  - Run: `npm run lint`, `npm run type-check`, `npm run test` (when suites mature).
+  - Optionally run migrations/seeds against a test DB for integration coverage.
+- External integrations:
+  - Stripe/Twilio/Resend/Daily must be mocked in automated tests.
 
 ---
 
@@ -161,13 +199,12 @@ Notes:
 
 ---
 
-## 13) Known unknowns (things the agent must check on first run)
-- Confirm actual presence and paths of:
-  - src/lib/trpc/server.ts and pages/api/trpc/[...trpc].ts
-  - src/lib/database/supabase-client.ts (env variable names)
-  - database/migrations and database/seeds content
-  - package.json scripts match docs (db:run-migrations, db:run-seeds)
-- Confirm whether mock mode flags exist for Stripe/Twilio/Resend.
+## 13) Known unknowns / things to verify on first run
+- Confirm:
+  - Environment variables are set and validated by `src/env.js`.
+  - Database migrations and seeds are aligned with current schema usage.
+  - Jest and Playwright configs match team expectations.
+  - Stripe/Twilio/Resend/Daily mock modes and secrets are wired correctly.
 
 ---
 ## 15) Auth & Identity — Single Source of Truth (UPDATED)
@@ -216,12 +253,12 @@ Current status (as of latest remediation):
 ---
 
 ## 14) Final short checklist for first delivery cycle
-- [ ] Clone repo and run npm install
-- [ ] Create .env.local from .env.example (use dev Supabase)
-- [ ] Run type-check, lint and tests
-- [ ] Run migrations and seeds
-- [ ] Start dev server and verify homepage
-- [ ] Open a small PR implementing one trivial fix or feature plus unit tests
+- [x] Clone repo and run npm install
+- [x] Create .env.local from .env.example (use dev Supabase)
+- [x] Run `npm run build` (includes lint + type-check) — currently passes
+- [ ] Run migrations and seeds (if using the full DB stack)
+- [ ] Add incremental Jest coverage for critical routers and jobs
+- [ ] Open small, focused PRs for further enhancements
 
 ---
 

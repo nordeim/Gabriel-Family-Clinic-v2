@@ -43,28 +43,31 @@ const ARCHITECTURE_PRINCIPLES = {
 ```typescript
 const TECH_STACK = {
   frontend: {
-    framework: "Next.js 13.5 (Pages Router)", // Stable, well-documented
-    ui_components: "Mantine 7.0",            // Complete component library
-    styling: "CSS Modules + Tailwind",       // Scoped + utilities
-    state: "Zustand 4.4",                   // Simple state management
-    forms: "React Hook Form 7.47",          // Performant forms
-    validation: "Zod 3.22"                  // Runtime + TypeScript validation
+    framework: "Next.js 14.2 (App Router + legacy Pages)", // Hybrid routing as in repo
+    ui_components: "Mantine 7.x",                          // Component library
+    styling: "Tailwind CSS + minimal custom CSS modules",  // Utilities + scoped styles
+    state: "Zustand 4.x",                                  // Simple state management
+    forms: "React Hook Form 7.x",                         // Performant forms
+    validation: "Zod 3.x"                                 // Runtime + TypeScript validation
   },
   backend: {
-    database: "PostgreSQL 15 (Supabase)",   // Managed, scalable
-    auth: "Supabase Auth",                  // Built-in, secure
-    api: "Next.js API Routes + tRPC",       // Type-safe API
-    realtime: "Supabase Realtime",          // WebSocket subscriptions
-    storage: "Supabase Storage",            // S3-compatible
-    edge_functions: "Vercel Edge Functions" // Fast, serverless
+    database: "PostgreSQL 15+ (Supabase-hosted)",          // Managed, scalable
+    // CRITICAL: Identity
+    auth: "NextAuth + Prisma",                            // Single source of truth
+    // Supabase is used strictly as Postgres (and optional storage/realtime), NOT as a parallel auth system.
+    api: "tRPC v11 + Next.js Route Handlers",             // Type-safe API surface
+    realtime: "Supabase Realtime (optional, feature-specific)",
+    storage: "Supabase Storage (optional, for files/MC PDFs)"
   },
   infrastructure: {
-    hosting: "Vercel Pro",                  // Optimized for Next.js
-    cdn: "Vercel Edge Network",             // Global distribution
-    monitoring: "Vercel Analytics + Sentry", // Performance + errors
-    emails: "Resend",                       // Reliable email delivery
-    sms: "Twilio",                         // SMS notifications
-    ci_cd: "GitHub Actions"                // Automated deployments
+    hosting: "Vercel or equivalent Node.js host",
+    cdn: "Vercel/Edge Network",
+    pwa: "next-pwa for service worker/offline support",
+    monitoring: "Pluggable (e.g., Vercel Analytics, Sentry)",
+    emails: "Resend (wrapped in lib/integrations)",
+    sms: "Twilio (wrapped in lib/integrations)",
+    video: "Daily.co for telemedicine",
+    ci_cd: "GitHub Actions"
   }
 };
 ```
@@ -95,10 +98,10 @@ graph TB
     end
     
     subgraph "Backend Services"
-        AUTH[Supabase Auth]
-        DB[(PostgreSQL)]
-        STORE[Object Storage]
-        REALTIME[Realtime Subscriptions]
+        AUTH[NextAuth + Prisma]
+        DB[(PostgreSQL via Supabase)]
+        STORE[Supabase Storage]
+        REALTIME[Supabase Realtime]
     end
     
     subgraph "External Services"
@@ -514,33 +517,38 @@ src/
    }
    ```
 
-2. **`src/pages/api/trpc/[...trpc].ts`**
-   ```typescript
-   // tRPC API handler for type-safe API calls
-   export default createNextApiHandler({
-     router: appRouter,
-     createContext,
-     onError: ({ error }) => {
-       console.error('tRPC error:', error);
-       Sentry.captureException(error);
-     },
-   });
-   ```
+2. **`src/app/api/trpc/[trpc]/route.ts`**
+    ```typescript
+    // tRPC handler (App Router) for type-safe API calls
+    import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+    import { appRouter } from "~/server/api/root";
+    import { createTRPCContext } from "~/server/api/trpc";
 
-3. **`src/lib/database/supabase-client.ts`**
-   ```typescript
-   // Supabase client with RLS
-   export const supabase = createClient(
-     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-     {
-       auth: {
-         persistSession: true,
-         autoRefreshToken: true,
-       },
-     }
-   );
-   ```
+    const handler = (req: NextRequest) =>
+      fetchRequestHandler({
+        endpoint: "/api/trpc",
+        req,
+        router: appRouter,
+        createContext: () =>
+          createTRPCContext({
+            headers: req.headers,
+          }),
+      });
+
+    export { handler as GET, handler as POST };
+    ```
+
+3. **`lib/supabase/client.ts`**
+    ```typescript
+    // Server-side Supabase client used purely as a Postgres client.
+    import { createClient } from "@supabase/supabase-js";
+
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+
+    export const supabase = createClient(url, key);
+    export default supabase;
+    ```
 
 ---
 
@@ -555,7 +563,7 @@ sequenceDiagram
     participant CDN as CDN/Edge
     participant APP as Next.js App
     participant API as API Routes
-    participant AUTH as Supabase Auth
+    participant AUTH as NextAuth
     participant DB as PostgreSQL
     participant CACHE as Cache Layer
     participant EXT as External Services
@@ -577,12 +585,10 @@ sequenceDiagram
     U->>B: Click Login
     B->>APP: Load login page
     U->>B: Enter credentials
-    B->>API: POST /api/auth/login
-    API->>AUTH: Verify credentials
-    AUTH->>DB: Check user
-    DB->>AUTH: User data
-    AUTH->>API: JWT token
-    API->>B: Set session cookie
+    B->>APP: Navigate to NextAuth sign-in route
+    APP->>AUTH: Handle provider/session
+    AUTH->>DB: Check user via Prisma
+    AUTH->>B: Set session cookie
     B->>APP: Redirect to dashboard
     
     %% Appointment Booking Flow
@@ -627,7 +633,7 @@ flowchart TD
     
     C --> E[Login Page]
     E --> F[Submit Credentials]
-    F --> G[Verify with Supabase Auth]
+    F --> G[Verify with NextAuth Provider]
     G -->|Invalid| H[Show Error]
     G -->|Valid| I[Generate JWT]
     I --> J[Set Session Cookie]

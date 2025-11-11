@@ -1,3 +1,5 @@
+$ rm -rf .next
+pete@pop-os:/home/project/Gabriel-Family-Clinic-v2
 $ npm run build
 
 > gabriel-family-clinic-v2@0.1.0 build
@@ -49,24 +51,35 @@ Route (pages)                                             Size     First Load JS
 ├ ○ /dashboard/payments/success                           653 B           202 kB
 ├ ○ /dashboard/profile/notifications                      919 B           205 kB
 ├ ○ /dashboard/telemedicine/consultation/[appointmentId]  65.6 kB         269 kB
-├ ○ /dashboard/vaccinations                               656 B           205 kB
+├ ○ /dashboard/vaccinations                               667 B           205 kB
 ├ ○ /doctor/consultations/[appointmentId]                 1.4 kB          205 kB
 ├ ○ /doctor/dashboard                                     7.33 kB         211 kB
 ├ ○ /doctor/login                                         312 B           202 kB
 ├ ○ /doctor/patients/[patientId]/history                  1.38 kB         205 kB
 ├ ○ /doctor/schedule                                      1.27 kB         205 kB
-├ ○ /health-screening                                     453 B           202 kB
+├ ○ /health-screening                                     537 B           202 kB
 ├ ○ /legacy-home                                          967 B           203 kB
 ├ ○ /login                                                1.66 kB         206 kB
 └ ○ /register                                             33.5 kB         250 kB
 + First Load JS shared by all                             236 kB
   ├ chunks/framework-ee1ebeba1a79078a.js                  44.8 kB
   ├ chunks/main-1e031fa8943bce98.js                       36.3 kB
-  ├ chunks/pages/_app-48c02b5c041ea51e.js                 119 kB
-  ├ css/e76d17b93ed076a0.css                              34 kB
+  ├ chunks/pages/_app-5785b7169dd44575.js                 119 kB
+  ├ css/2d739f18153f0c8d.css                              34 kB
   └ other shared chunks (total)                           1.81 kB
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
+pete@pop-os:/home/project/Gabriel-Family-Clinic-v2
+$ npm run start
 
+> gabriel-family-clinic-v2@0.1.0 start
+> next start
+
+  ▲ Next.js 14.2.33
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ⚠ The static directory has been deprecated in favor of the public directory. https://nextjs.org/docs/messages/static-dir-deprecated
+ ✓ Ready in 1823ms
