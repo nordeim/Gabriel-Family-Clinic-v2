@@ -11,7 +11,9 @@
  *   - Depend on Supabase Auth for identity.
  *   - Bypass the canonical NextAuth/Prisma identity for user-facing logic.
  *
- * Jobs are infrastructure-level and must not log PHI or sensitive payloads.
+ * PDPA:
+ * - Jobs are infrastructure-level and must not log PHI or full payloads.
+ * - Log only job ids, queue names, error codes/messages and high-level context.
  */
  
  import { createSupabaseAdminClient } from "@/lib/supabase/admin";
