@@ -3,6 +3,7 @@ import { router, protectedProcedure } from "../server";
 import { z } from "zod";
 import { dailyVideoProvider } from "@/lib/integrations/daily";
 import { TRPCError } from "@trpc/server";
+import type { TelemedicineSessionRecord } from "@/types/db";
 
 export const telemedicineRouter = router({
   getTelemedicineSession: protectedProcedure
@@ -46,11 +47,14 @@ export const telemedicineRouter = router({
       }
 
       // 3. Check if a session already exists for this appointment.
-      const { data: existingSession, error: existingError } = await ctx.supabase
+      const {
+        data: existingSession,
+        error: existingError,
+      } = await ctx.supabase
         .from("telemedicine_sessions")
         .select("room_url")
         .eq("appointment_id", input.appointmentId)
-        .single();
+        .single<Pick<TelemedicineSessionRecord, "room_url">>();
 
       if (!existingError && existingSession?.room_url) {
         return { roomUrl: existingSession.room_url };
