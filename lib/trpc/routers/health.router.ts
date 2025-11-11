@@ -14,6 +14,10 @@ import { TRPCError } from "@trpc/server";
  *   - Use NextAuth/Prisma identity via ctx.session.user.id (surfaced as ctx.user.id here).
  *   - Avoid returning sensitive PHI beyond what is necessary for UX.
  * - No Supabase Auth usage is allowed.
+ *
+ * PDPA:
+ * - Responses MUST remain minimal and non-diagnostic.
+ * - Do not expose or log detailed clinical records, NRIC, or other PHI here.
  */
 
 export const healthRouter = router({
