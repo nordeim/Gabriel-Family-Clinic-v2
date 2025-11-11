@@ -13,9 +13,10 @@
  *
  * Jobs are infrastructure-level and must not log PHI or sensitive payloads.
  */
-
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { JobPayloads, JobType, JobRecord } from "./types";
+ 
+ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+ import type { JobPayloads, JobType } from "./types";
+ import type { JobRecord } from "@/types/db";
 
 const MAX_ATTEMPTS = 5;
 
@@ -88,7 +89,7 @@ export class JobProcessor {
     }
   }
 
-  private async markAsCompleted(jobId: number) {
+  private async markAsCompleted(jobId: string | number) {
     const { error } = await this.supabase
       .from("jobs")
       .update({ status: "completed", last_error: null })
@@ -103,7 +104,7 @@ export class JobProcessor {
     }
   }
 
-  private async markAsFailed(jobId: number, errorMessage: string) {
+  private async markAsFailed(jobId: string | number, errorMessage: string) {
     const { error } = await this.supabase
       .from("jobs")
       .update({
@@ -122,7 +123,7 @@ export class JobProcessor {
   }
 
   private async retryJob(
-    jobId: number,
+    jobId: string | number,
     errorMessage: string,
     currentAttempts?: number,
   ) {
