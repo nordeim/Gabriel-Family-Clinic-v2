@@ -4,6 +4,7 @@ import { z } from "zod";
 import { stripeService } from "@/lib/integrations/stripe";
 import { CHASCalculator } from "@/lib/utils/chas-calculator";
 import { TRPCError } from "@trpc/server";
+import type { PaymentRecord } from "@/types/db";
 
 /**
  * Utility for generating human-readable, unique identifiers.
@@ -129,7 +130,7 @@ export const paymentRouter = router({
           status: "pending",
         })
         .select("id")
-        .single();
+        .single<Pick<PaymentRecord, "id">>();
 
       if (paymentError || !paymentRecord) {
         throw new TRPCError({
