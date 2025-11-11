@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" id="top">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gabriel Family Clinic — Healthcare with Heart in Your Neighborhood</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Gabriel Family Clinic — warm, senior-friendly family healthcare in your neighborhood. Same-day appointments, transparent pricing, Healthier SG aligned."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles/globals.css" />
+  </head>
+  <body>
+    <!-- Page Shell -->
+    <header class="header">
+      <div class="top-bar container">
+        <div class="brand">
+          <div class="brand-logo" aria-hidden="true">🏥</div>
+          <div class="brand-text">
+            <div class="brand-title">Gabriel Family Clinic</div>
+            <div class="brand-subtitle">
+              Healthcare with Heart · Serangoon · Singapore
+            </div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <div class="lang-pills" aria-label="Language options">
+            <span class="pill pill-soft">EN</span>
+            <span class="pill pill-ghost">中文</span>
+            <span class="pill pill-ghost">BM</span>
+            <span class="pill pill-ghost">தமிழ்</span>
+          </div>
+          <a class="btn btn-ghost btn-sm" href="tel:+6591234567">
+            Call Now
+          </a>
+          <button class="btn btn-primary btn-sm js-scroll" data-target="#hero-book">
+            Book Appointment
+          </button>
+          <button
+            class="btn btn-ghost btn-icon-only senior-toggle"
+            type="button"
+            aria-pressed="false"
+            title="Toggle senior-friendly mode"
+          >
+            A+
+          </button>
+        </div>
+      </div>
+
+      <nav class="navbar">
+        <div class="container navbar-inner">
+          <div class="navbar-brand">
+            <span class="navbar-logo" aria-hidden="true">GFC</span>
+            <span class="navbar-title">Healthcare with Heart</span>
+          </div>
+          <button
+            class="navbar-toggle"
+            type="button"
+            aria-label="Toggle navigation"
+            aria-expanded="false"
+          >
+            <span></span><span></span><span></span>
+          </button>
+          <div class="navbar-links" data-navbar-menu>
+            <a href="#top" class="nav-link js-scroll">Home</a>
+            <a href="#why-us" class="nav-link js-scroll">Why Us</a>
+            <a href="#services" class="nav-link js-scroll">Services</a>
+            <a href="#doctors" class="nav-link js-scroll">Our Doctors</a>
+            <a href="#for-patients" class="nav-link js-scroll">For Patients</a>
+            <a href="#contact" class="nav-link js-scroll">Contact</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Hero Section -->
+      <section id="hero" class="section hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <h1 class="hero-title">
+              Healthcare with Heart,
+              <span class="hero-highlight">right in your neighborhood.</span>
+            </h1>
+            <p class="hero-subtitle">
+              Same-day family care, senior-friendly service, and Healthier&nbsp;SG aligned
+              chronic care — designed for Singapore families and grandparents.
+            </p>
+            <div class="hero-actions">
+              <button
+                class="btn btn-primary btn-lg js-scroll"
+                data-target="#hero-book"
+              >
+                Book an Appointment
+              </button>
+              <button
+                class="btn btn-outline btn-lg js-scroll"
+                data-target="#contact"
+              >
+                View Clinic Hours
+              </button>
+            </div>
+            <div class="hero-trust">
+              <div class="stat">
+                <div class="stat-label">Google Rating</div>
+                <div class="stat-value">4.9★</div>
+                <div class="stat-note">From our happy families</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Same-Day Slots</div>
+                <div class="stat-value">Available</div>
+                <div class="stat-note">For urgent but non-emergency care</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">CHAS / Medisave</div>
+                <div class="stat-value">Accepted</div>
+                <div class="stat-note">Transparent subsidies & fees</div>
+              </div>
+            </div>
+            <div class="hero-badges">
+              <span class="badge-soft">MOH-compliant Care</span>
+              <span class="badge-soft">PDPA-Safe Records</span>
+              <span class="badge-soft">Healthier SG Ready</span>
+            </div>
+          </div>
+
+          <aside class="hero-card" id="hero-book">
+            <h2 class="hero-card-title">Next Available Slots</h2>
+            <ul class="slot-list" aria-label="Sample upcoming appointment slots">
+              <li>
+                <span>Today</span>
+                <span>4:30 PM · Dr. Tan</span>
+              </li>
+              <li>
+                <span>Today</span>
+                <span>6:00 PM · Dr. Lee</span>
+              </li>
+              <li>
+                <span>Tomorrow</span>
+                <span>9:00 AM · Dr. Kumar</span>
+              </li>
+            </ul>
+            <form class="form" id="quick-booking-form" novalidate>
+              <div class="field">
+                <label class="field-label" for="qb-name">Full Name</label>
+                <input
+                  id="qb-name"
+                  class="input"
+                  type="text"
+                  name="name"
+                  placeholder="E.g. Lim Mei Ling"
+                  required
+                />
+                <p class="field-error" data-error-for="qb-name"></p>
+              </div>
+              <div class="field">
+                <label class="field-label" for="qb-phone">Mobile Number</label>
+                <input
+                  id="qb-phone"
+                  class="input"
+                  type="tel"
+                  name="phone"
+                  placeholder="E.g. 91234567"
+                  required
+                />
+                <p class="field-error" data-error-for="qb-phone"></p>
+              </div>
+              <div class="field">
+                <label class="field-label" for="qb-reason">Visit Reason</label>
+                <select
+                  id="qb-reason"
+                  class="select"
+                  name="reason"
+                  required
+                >
+                  <option value="">Select one</option>
+                  <option value="acute">Flu / Fever / Cough</option>
+                  <option value="chronic">Chronic Check-up</option>
+                  <option value="screening">Health Screening</option>
+                  <option value="vaccination">Vaccination</option>
+                  <option value="other">Other</option>
+                </select>
+                <p class="field-error" data-error-for="qb-reason"></p>
+              </div>
+              <div class="field">
+                <label class="field-label" for="qb-slot">Preferred Slot</label>
+                <select
+                  id="qb-slot"
+                  class="select"
+                  name="slot"
+                  required
+                >
+                  <option value="">Select a sample slot</option>
+                  <option value="today-430">Today · 4:30 PM · Dr. Tan</option>
+                  <option value="today-600">Today · 6:00 PM · Dr. Lee</option>
+                  <option value="tomorrow-900">Tomorrow · 9:00 AM · Dr. Kumar</option>
+                </select>
+                <p class="field-error" data-error-for="qb-slot"></p>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">
+                Request Callback to Confirm
+              </button>
+              <p class="form-help">
+                No payment required online. Our team will confirm your slot via call or WhatsApp.
+              </p>
+            </form>
+          </aside>
+        </div>
+      </section>
+
+      <!-- Why Us -->
+      <section id="why-us" class="section muted">
+        <div class="container">
+          <header class="section-header">
+            <h2>Why Families Choose Gabriel Family Clinic</h2>
+            <p>
+              Built for grandparents, busy parents, and little ones — with warmth,
+              clarity, and genuine care.
+            </p>
+          </header>
+          <div class="grid-4">
+            <div class="card-soft feature">
+              <div class="feature-icon">👵</div>
+              <h3>Senior-Friendly by Design</h3>
+              <p>
+                Large text, clear wayfinding, and gentle guidance make it easy for
+                seniors to book and check in without stress.
+              </p>
+            </div>
+            <div class="card-soft feature">
+              <div class="feature-icon">🔍</div>
+              <h3>Transparent & Honest</h3>
+              <p>
+                Upfront pricing, CHAS & Medisave support, and no hidden fees —
+                what you see is what you pay.
+              </p>
+            </div>
+            <div class="card-soft feature">
+              <div class="feature-icon">🩺</div>
+              <h3>Trusted Family Doctors</h3>
+              <p>
+                Experienced doctors who know your family history and partner with
+                you for long-term health.
+              </p>
+            </div>
+            <div class="card-soft feature">
+              <div class="feature-icon">🇸🇬</div>
+              <h3>Healthier SG Ready</h3>
+              <p>
+                Preventive care, chronic disease management, and screenings aligned
+                with national guidelines.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Services -->
+      <section id="services" class="section">
+        <div class="container">
+          <header class="section-header">
+            <h2>Essential Care, Clearly Presented</h2>
+            <p>
+              A focused range of services covering everyday family medicine,
+              chronic care, screenings, and vaccinations.
+            </p>
+          </header>
+          <div class="services-grid">
+            <div class="card-elevated">
+              <h3>Family Medicine</h3>
+              <ul class="list">
+                <li>Flu, fever, cough, cold</li>
+                <li>Minor injuries & infections</li>
+                <li>Children and adult consultations</li>
+              </ul>
+              <div class="price-label">From $28 consultation</div>
+            </div>
+            <div class="card-elevated">
+              <h3>Chronic Care</h3>
+              <ul class="list">
+                <li>Diabetes, Hypertension, Lipids</li>
+                <li>Medication review & titration</li>
+                <li>Personalised care plans</li>
+              </ul>
+              <div class="price-label">Subsidies available</div>
+            </div>
+            <div class="card-elevated">
+              <h3>Health Screening</h3>
+              <ul class="list">
+                <li>Basic & executive packages</li>
+                <li>Customised by age & risk</li>
+                <li>Results explained clearly</li>
+              </ul>
+              <div class="price-label">From $98 per package</div>
+            </div>
+            <div class="card-elevated">
+              <h3>Vaccinations</h3>
+              <ul class="list">
+                <li>Influenza, Pneumococcal</li>
+                <li>Childhood & adult vaccines</li>
+                <li>HPV & travel vaccines</li>
+              </ul>
+              <div class="price-label">MOH schedule supported</div>
+            </div>
+          </div>
+          <div class="section-cta">
+            <button
+              class="btn btn-outline btn-lg js-scroll"
+              data-target="#hero-book"
+            >
+              Book your visit in under 1 minute
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Doctors -->
+      <section id="doctors" class="section muted">
+        <div class="container">
+          <header class="section-header">
+            <h2>Meet Our Doctors</h2>
+            <p>
+              A small, dedicated team that remembers your name, your story, and
+              your health goals.
+            </p>
+          </header>
+          <div class="grid-3">
+            <article class="doctor-card card-soft">
+              <div class="doctor-avatar" aria-hidden="true">Dr</div>
+              <h3 class="doctor-name">Dr. Sarah Tan</h3>
+              <p class="doctor-role">Family Physician · MBBS (Singapore)</p>
+              <p class="doctor-meta">Speaks: English, Chinese</p>
+              <p class="doctor-bio">
+                Gentle with seniors and kids, Dr. Tan focuses on chronic care and
+                preventive health for multi-generation families.
+              </p>
+            </article>
+            <article class="doctor-card card-soft">
+              <div class="doctor-avatar" aria-hidden="true">Dr</div>
+              <h3 class="doctor-name">Dr. Daniel Lee</h3>
+              <p class="doctor-role">
+                Family Physician · MMed (Family Med)
+              </p>
+              <p class="doctor-meta">Speaks: English</p>
+              <p class="doctor-bio">
+                Passionate about men's health, mental wellness, and building long-term
+                doctor-patient relationships.
+              </p>
+            </article>
+            <article class="doctor-card card-soft">
+              <div class="doctor-avatar" aria-hidden="true">Dr</div>
+              <h3 class="doctor-name">Dr. Priya Kumar</h3>
+              <p class="doctor-role">Family Physician</p>
+              <p class="doctor-meta">Speaks: English, Tamil</p>
+              <p class="doctor-bio">
+                Focused on women's health, child health, and Healthier SG-aligned
+                preventive care.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- For Patients -->
+      <section id="for-patients" class="section">
+        <div class="container">
+          <header class="section-header">
+            <h2>Simple for Patients, Powerful for Families</h2>
+            <p>
+              Designed so that any grandparent can use it independently — and
+              every caregiver has the information they need.
+            </p>
+          </header>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <h3>Book in under 60 seconds</h3>
+              <p>Choose a time, leave your number — we handle the rest.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <h3>Easy check-in</h3>
+              <p>Just your mobile number at the counter. No complicated IDs.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <h3>Clear follow-up</h3>
+              <p>
+                Simple instructions, reminders, and support for long-term health.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials & Contact -->
+      <section id="contact" class="section muted">
+        <div class="container contact-grid">
+          <div class="testimonials">
+            <header class="section-header-left">
+              <h2>What Our Patients Say</h2>
+              <p>Real words from our neighborhood families.</p>
+            </header>
+            <div class="testimonial-list">
+              <figure class="testimonial card-soft">
+                <blockquote>
+                  "The doctors take time to explain everything to my mother in
+                  simple terms. Clinic staff are patient and kind."
+                </blockquote>
+                <figcaption>— Wei Ling, 42</figcaption>
+              </figure>
+              <figure class="testimonial card-soft">
+                <blockquote>
+                  "Senior-friendly, no long wait, and clear on fees. I feel safe
+                  bringing my parents here."
+                </blockquote>
+                <figcaption>— Mr. Tan, 51</figcaption>
+              </figure>
+            </div>
+          </div>
+
+          <div class="contact-card card-elevated">
+            <h2>Visit or Contact Us</h2>
+            <p class="contact-line">
+              📍 Blk 123 Serangoon Ave 3, #01-01, Singapore 550123
+            </p>
+            <p class="contact-line">
+              📞 <a href="tel:+6591234567">+65 9123 4567</a>
+            </p>
+            <p class="contact-line">
+              💬 <a href="https://wa.me/6591234567">WhatsApp us</a>
+            </p>
+            <p class="contact-line">
+              ✉️ <a href="mailto:hello@gabrielfamilyclinic.sg">hello@gabrielfamilyclinic.sg</a>
+            </p>
+            <p class="contact-line">
+              ⏰ Mon–Fri: 8:30am–9:00pm · Sat–Sun: 9:00am–5:00pm
+            </p>
+
+            <form id="contact-form" class="form" novalidate>
+              <div class="field">
+                <label class="field-label" for="cf-name">Name</label>
+                <input
+                  id="cf-name"
+                  class="input"
+                  type="text"
+                  name="name"
+                  placeholder="Your full name"
+                  required
+                />
+                <p class="field-error" data-error-for="cf-name"></p>
+              </div>
+              <div class="field">
+                <label class="field-label" for="cf-email">Email</label>
+                <input
+                  id="cf-email"
+                  class="input"
+                  type="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  required
+                />
+                <p class="field-error" data-error-for="cf-email"></p>
+              </div>
+              <div class="field">
+                <label class="field-label" for="cf-message">Message</label>
+                <textarea
+                  id="cf-message"
+                  class="textarea"
+                  name="message"
+                  rows="3"
+                  placeholder="How can we help?"
+                  required
+                ></textarea>
+                <p class="field-error" data-error-for="cf-message"></p>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">
+                Send Message
+              </button>
+              <p class="form-help">
+                For emergencies, please dial 995. Do not submit emergency requests here.
+              </p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <div class="brand-title">Gabriel Family Clinic</div>
+          <div class="brand-subtitle">
+            Healthcare with Heart for every generation.
+          </div>
+        </div>
+        <div class="footer-links">
+          <a href="#" aria-label="Privacy Policy">Privacy</a>
+          <a href="#" aria-label="PDPA Notice">PDPA</a>
+          <a href="#" aria-label="Terms of Use">Terms</a>
+        </div>
+        <div class="footer-meta">
+          <span class="badge-soft">PDPA Compliant</span>
+          <span class="badge-soft">MOH Guidelines Aligned</span>
+        </div>
+        <div class="footer-copy">
+          ©
+          <span id="year"></span>
+          Gabriel Family Clinic. All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./js/landing.js" defer></script>
+  </body>
+</html>
