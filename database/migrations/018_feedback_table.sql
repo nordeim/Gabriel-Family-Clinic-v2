@@ -6,7 +6,9 @@
 
 CREATE TABLE IF NOT EXISTS public.user_feedback (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    -- Align with core identity model: users table lives in the `clinic` schema.
+    -- We keep this in `public` schema as a cross-cutting table, but reference clinic.users.
+    user_id UUID REFERENCES clinic.users(id) ON DELETE SET NULL,
     rating INT CHECK (rating >= 1 AND rating <= 5),
     feedback_text TEXT,
     page_url TEXT,
