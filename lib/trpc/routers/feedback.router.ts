@@ -17,7 +17,7 @@ export const feedbackRouter = router({
       }
 
       const { error } = await ctx.supabase.from("user_feedback").insert({
-        user_id: ctx.user.id,
+        user_id: ctx.user.id, // NextAuth/Prisma canonical user id
         rating: input.rating,
         feedback_text: input.feedbackText,
         page_url: input.pageUrl,
@@ -26,11 +26,14 @@ export const feedbackRouter = router({
 
       if (error) {
         console.error("Failed to save user feedback:", error);
-        throw new Error("Could not submit your feedback at this time.");
+        // Use TRPC-friendly error signaling
+        throw new (await import("@trpc/server")).TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not submit your feedback at this time.",
+        });
       }
 
-      // Optional: Send a notification to a Slack channel about new feedback
-      // await notifyTeamOfFeedback(input);
+      // Optional: Send a notification (Slack/email/etc.) via jobs/queue.
 
       return { success: true };
     }),
