@@ -755,8 +755,8 @@ export default function LandingPage() {
               <div className="space-y-3">
                 <figure className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm">
                   <blockquote className="text-slate-700 mb-1">
-                    "The doctors take time to explain everything to my mother in
-                    simple terms. Clinic staff are patient and kind."
+                    &quot;The doctors take time to explain everything to my mother in
+                    simple terms. Clinic staff are patient and kind.&quot;
                   </blockquote>
                   <figcaption className="text-[9px] text-slate-500">
                     — Wei Ling, 42
@@ -764,8 +764,8 @@ export default function LandingPage() {
                 </figure>
                 <figure className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm">
                   <blockquote className="text-slate-700 mb-1">
-                    "Senior-friendly, no long wait, and clear on fees. I feel
-                    safe bringing my parents here."
+                    &quot;Senior-friendly, no long wait, and clear on fees. I feel
+                    safe bringing my parents here.&quot;
                   </blockquote>
                   <figcaption className="text-[9px] text-slate-500">
                     — Mr. Tan, 51
