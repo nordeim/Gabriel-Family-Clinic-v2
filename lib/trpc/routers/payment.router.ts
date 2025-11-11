@@ -69,7 +69,7 @@ export const paymentRouter = router({
         chas_card_type?: string | null;
       };
 
-      const patientsField = (appointment as Record<string, unknown>).patients;
+      const patientsField = (appointment as { patients?: PatientShape | PatientShape[] }).patients;
       const patient: PatientShape | undefined = Array.isArray(patientsField)
         ? (patientsField[0] as PatientShape)
         : (patientsField as PatientShape | undefined);
@@ -85,7 +85,10 @@ export const paymentRouter = router({
       // Map CHAS value defensively.
       const validChas = new Set(["blue", "orange", "green", "none"]);
       const rawChas = (patient.chas_card_type ?? "none").toString();
-      const chasCardType = validChas.has(rawChas) ? (rawChas as any) : "none";
+      type ChasCardType = "blue" | "orange" | "green" | "none";
+      const chasCardType: ChasCardType = validChas.has(rawChas)
+        ? (rawChas as ChasCardType)
+        : "none";
 
       // 3. Calculate subsidy and final amount.
       const { subsidyAmount, finalAmount } = CHASCalculator.calculate({
