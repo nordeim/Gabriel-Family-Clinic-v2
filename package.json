@@ -17,6 +17,7 @@
     "clean": "rm -rf .next",
     "build:clean": "npm run clean && npm run build",
     "test": "echo 'No unit tests yet'",
+    "test:unit": "vitest run --runInBand --reporter=dot",
     "test:e2e": "playwright test",
     "test:load": "k6 run tests/load/stress-test.js",
     "db:run-migrations": "node -r dotenv/config scripts/run-migrations.js",
@@ -89,7 +90,8 @@
     "snyk": "^1",
     "tailwindcss": "3.4.18",
     "ts-jest": "^29.4.5",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.0.8"
   },
   "packageManager": "npm@10.5.0"
 }
