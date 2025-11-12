@@ -63,14 +63,17 @@ CREATE TABLE IF NOT EXISTS appointments (
 -- This exclusion constraint is superior to a simple UNIQUE constraint as it
 -- properly handles duration, preventing any overlap in a doctor's schedule.
 -- Implementation detail:
--- - We use generated columns (appointment_start_at, appointment_end_at)
---   to ensure the underlying index expression is immutable and compatible
---   with PostgreSQL/Supabase requirements for GiST indexes.
+-- - To avoid IMMUTABLE generation expression requirements in Supabase/Postgres,
+--   we compute the range directly in the index expression using only immutable
+--   functions/operators.
 ALTER TABLE appointments
     ADD CONSTRAINT prevent_appointment_overlap
     EXCLUDE USING gist (
         doctor_id WITH =,
-        tstzrange(appointment_start_at, appointment_end_at) WITH &&
+        tstzrange(
+            (appointment_date + appointment_time)::timestamptz,
+            (appointment_date + appointment_time + (duration_minutes || ' minutes')::interval)::timestamptz
+        ) WITH &&
     )
     WHERE (status NOT IN ('cancelled', 'rescheduled'));
 

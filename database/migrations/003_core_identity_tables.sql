@@ -69,8 +69,25 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT unique_email_per_clinic UNIQUE(clinic_id, email)
 );
 
--- Apply the `updated_at` trigger to these tables
-CREATE TRIGGER update_clinics_updated_at BEFORE UPDATE ON clinics
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+-- Apply the `updated_at` trigger to these tables (idempotent)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger
+        WHERE tgname = 'update_clinics_updated_at'
+    ) THEN
+        CREATE TRIGGER update_clinics_updated_at
+        BEFORE UPDATE ON clinics
+        FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger
+        WHERE tgname = 'update_users_updated_at'
+    ) THEN
+        CREATE TRIGGER update_users_updated_at
+        BEFORE UPDATE ON users
+        FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+END;
+$$;
