@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${SUPABASE_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${SUPABASE_DB_PASSWORD:-local_dev_password_change_me}
       POSTGRES_DB: ${SUPABASE_DB_NAME:-postgres}
-      PGDATA: /var/lib/postgresql/data/pgdata
+      
     ports:
       - "${SUPABASE_DB_PORT:-54322}:5432"
     volumes:
