@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 /**
@@ -153,12 +152,13 @@ export default function PatientBookAppointmentPage() {
             </p>
           )}
           <div className="grid gap-2 sm:grid-cols-2">
-            {slots?.map((slot: any) => {
-              const isSelected = selectedSlot?.id === slot.id;
+            {slots?.map((slot) => {
+              const normalizedSlot = slot as unknown as Slot;
+              const isSelected = selectedSlot?.id === normalizedSlot.id;
               return (
                 <Card
-                  key={slot.id}
-                  onClick={() => handleSelectSlot(slot as Slot)}
+                  key={normalizedSlot.id}
+                  onClick={() => handleSelectSlot(normalizedSlot)}
                   className={`cursor-pointer border text-[9px] p-2 ${
                     isSelected
                       ? "border-[#ff6b6b] bg-[#fff0ec]"
@@ -166,10 +166,10 @@ export default function PatientBookAppointmentPage() {
                   }`}
                 >
                   <div className="font-semibold text-slate-800">
-                    {slot.slot_date} • {slot.slot_time}
+                    {normalizedSlot.slot_date} • {normalizedSlot.slot_time}
                   </div>
                   <div className="text-[8px] text-slate-600">
-                    Duration: {slot.duration_minutes ?? 15} minutes
+                    Duration: {normalizedSlot.duration_minutes ?? 15} minutes
                   </div>
                 </Card>
               );

@@ -25,6 +25,22 @@ import { Input } from "@/components/ui/input";
 const STATUS_OPTIONS = ["all", "new", "contacted", "confirmed", "cancelled"] as const;
 type StatusFilter = (typeof STATUS_OPTIONS)[number];
 
+type AdminLeadRow = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  clinic_id: string | null;
+  name: string;
+  phone: string;
+  contact_preference: string | null;
+  preferred_time_text: string | null;
+  reason: string | null;
+  source: string | null;
+  status: "new" | "contacted" | "confirmed" | "cancelled";
+  appointment_id: string | null;
+};
+
+
 export default function AdminBookingLeadsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("new");
   const [limit, setLimit] = useState(50);
@@ -63,7 +79,9 @@ export default function AdminBookingLeadsPage() {
     }
   };
 
-  const leads = leadsQuery.data ?? [];
+  const leads = (Array.isArray(leadsQuery.data)
+    ? (leadsQuery.data as unknown as AdminLeadRow[])
+    : []) as AdminLeadRow[];
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -158,7 +176,7 @@ export default function AdminBookingLeadsPage() {
               <div className="col-span-2 text-right">Actions</div>
             </div>
 
-            {leads.map((lead: any) => (
+            {leads.map((lead) => (
               <Card
                 key={lead.id}
                 className="grid grid-cols-12 gap-2 items-center px-2 py-2 text-[8px]"

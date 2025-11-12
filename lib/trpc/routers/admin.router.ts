@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter } from "~/server/api/trpc";
 import { adminProcedure } from "../middlewares/adminAuth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -19,7 +19,25 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
  * - Returns minimal, non-sensitive data appropriate for internal dashboards.
  */
 
-function getSupabaseFromContext(ctx: any) {
+type _AdminLeadRow = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  clinic_id: string | null;
+  name: string;
+  phone: string;
+  contact_preference: string | null;
+  preferred_time_text: string | null;
+  reason: string | null;
+  source: string | null;
+  status: "new" | "contacted" | "confirmed" | "cancelled";
+  appointment_id: string | null;
+};
+
+function getSupabaseFromContext(ctx: {
+  supabaseAdmin?: ReturnType<typeof createSupabaseAdminClient>;
+  supabase?: ReturnType<typeof createSupabaseAdminClient>;
+}) {
   // Prefer an admin client on ctx if available; otherwise fall back to a shared admin client.
   if (ctx.supabaseAdmin) return ctx.supabaseAdmin;
   if (ctx.supabase) return ctx.supabase;
