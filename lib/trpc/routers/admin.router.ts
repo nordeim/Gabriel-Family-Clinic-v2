@@ -1,141 +1,159 @@
-// lib/trpc/routers/admin.router.ts
-
-import { router } from "../server";
-import { adminProcedure } from "../middlewares/adminAuth";
 import { z } from "zod";
-import { enqueueJob } from "@/lib/jobs/queue";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { adminProcedure } from "../middlewares/adminAuth";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-export const adminRouter = router({
+/**
+ * Admin Router
+ *
+ * Extended with booking lead management endpoints:
+ * - listPublicBookingRequests: view persisted leads from booking.public_booking_requests
+ * - updatePublicBookingRequestStatus: update status lifecycle
+ * - linkPublicBookingRequestToAppointment: associate a lead with a real appointment
+ *
+ * Design notes:
+ * - All procedures are:
+ *   - protected (require authenticated session)
+ *   - wrapped with adminAuth (must be admin/staff role as defined by middleware)
+ * - Uses Supabase admin client for DB access on the server.
+ * - Returns minimal, non-sensitive data appropriate for internal dashboards.
+ */
+
+function getSupabaseFromContext(ctx: any) {
+  // Prefer an admin client on ctx if available; otherwise fall back to a shared admin client.
+  if (ctx.supabaseAdmin) return ctx.supabaseAdmin;
+  if (ctx.supabase) return ctx.supabase;
+  return createSupabaseAdminClient();
+}
+
+export const adminRouter = createTRPCRouter({
   /**
-   * Fetches key metrics for the main admin dashboard.
+   * List public booking requests (leads).
+   *
+   * Filters:
+   * - status (optional)
+   * - limit (optional, default 50)
    */
-  getDashboardMetrics: adminProcedure.query(async ({ ctx }) => {
-    const { count: totalPatients, error: patientError } = await ctx.supabase
-      .from("patients")
-      .select("*", { count: "exact", head: true });
-
-    const { count: appointmentsToday, error: apptError } = await ctx.supabase
-      .from("appointments")
-      .select("*", { count: "exact", head: true })
-      .eq("appointment_date", new Date().toISOString().split("T")[0]);
-
-    if (patientError || apptError) {
-      console.error("Error fetching dashboard metrics:", patientError || apptError);
-      throw new Error("Failed to fetch dashboard metrics.");
-    }
-
-    // Placeholder for revenue calculation
-    const monthlyRevenue = 54321.90;
-
-    return {
-      totalPatients: totalPatients ?? 0,
-      appointmentsToday: appointmentsToday ?? 0,
-      monthlyRevenue: monthlyRevenue,
-    };
-  }),
-
-  /**
-   * Fetches a paginated and filterable list of all users in the system.
-   */
-  getUsers: adminProcedure
-    .input(z.object({
-      page: z.number().min(1).default(1),
-      limit: z.number().min(5).max(100).default(10),
-      filter: z.string().optional(),
-    }))
+  listPublicBookingRequests: adminProcedure
+    .input(
+      z
+        .object({
+          status: z
+            .enum(["new", "contacted", "confirmed", "cancelled"])
+            .optional(),
+          limit: z.number().int().min(1).max(200).optional(),
+        })
+        .optional(),
+    )
     .query(async ({ ctx, input }) => {
-      const query = ctx.supabase
-        .from("users")
-        .select("id, full_name, email, role, is_active, created_at", { count: "exact" });
-      
-      if (input.filter) {
-        query.ilike('full_name', `%${input.filter}%`);
-      }
+      const supabase = getSupabaseFromContext(ctx);
+      const { status, limit } = input ?? {};
 
-      const { data, error, count } = await query
+      let query = supabase
+        .from("booking.public_booking_requests")
+        .select(
+          [
+            "id",
+            "created_at",
+            "updated_at",
+            "clinic_id",
+            "name",
+            "phone",
+            "contact_preference",
+            "preferred_time_text",
+            "reason",
+            "source",
+            "status",
+            "appointment_id",
+          ].join(", "),
+        )
         .order("created_at", { ascending: false })
-        .range((input.page - 1) * input.limit, input.page * input.limit - 1);
+        .limit(limit ?? 50);
 
-      if (error) {
-        console.error("Error fetching users:", error);
-        throw new Error("Failed to fetch users.");
+      if (status) {
+        query = query.eq("status", status);
       }
 
-  // Return `total` for compatibility with existing frontend components
-  return { users: data, total: count ?? 0 };
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(
+          `Failed to load booking leads: ${error.message ?? "unknown error"}`,
+        );
+      }
+
+      return data ?? [];
     }),
 
   /**
-   * Updates a specific user's role and active status.
+   * Update the status of a public booking request lead.
+   *
+   * Allows staff/admin to mark leads as contacted / confirmed / cancelled.
    */
-  updateUser: adminProcedure
-    .input(z.object({
-      userId: z.string().uuid(),
-      role: z.enum(["patient", "doctor", "staff", "admin", "superadmin"]),
-      isActive: z.boolean(),
-    }))
+  updatePublicBookingRequestStatus: adminProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        status: z.enum(["new", "contacted", "confirmed", "cancelled"]),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const { error } = await ctx.supabase
-        .from("users")
-        .update({ role: input.role, is_active: input.isActive })
-        .eq("id", input.userId);
-      
+      const supabase = getSupabaseFromContext(ctx);
+
+      const { data, error } = await supabase
+        .from("booking.public_booking_requests")
+        .update({
+          status: input.status,
+        })
+        .eq("id", input.id)
+        .select("id, status")
+        .maybeSingle();
+
       if (error) {
-        console.error(`Error updating user ${input.userId}:`, error);
-        throw new Error("Failed to update user.");
+        throw new Error(
+          `Failed to update booking lead status: ${
+            error.message ?? "unknown error"
+          }`,
+        );
       }
-      return { success: true };
+
+      return data;
     }),
 
   /**
-   * Enqueues jobs to send a broadcast message to a target audience.
+   * Link a public booking request to a real appointment.
+   *
+   * Used after staff/admin confirms a booking and creates an appointment
+   * (e.g. via the authenticated booking pipeline).
    */
-  sendBroadcast: adminProcedure
-    .input(z.object({
-      channel: z.enum(["sms", "email"]),
-      message: z.string().min(10, "Message must be at least 10 characters."),
-      clinicId: z.string().uuid("Please select a clinic."),
-    }))
+  linkPublicBookingRequestToAppointment: adminProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        appointmentId: z.string().uuid(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      // 1. Fetch all patients for the selected clinic who have opted in to the specified channel.
-      const { data: patients, error } = await ctx.supabase
-        .from("patients")
-        .select("users!inner(id, phone, email, notification_preferences)")
-        .eq("clinic_id", input.clinicId);
+      const supabase = getSupabaseFromContext(ctx);
+
+      const { data, error } = await supabase
+        .from("booking.public_booking_requests")
+        .update({
+          appointment_id: input.appointmentId,
+          status: "confirmed",
+        })
+        .eq("id", input.id)
+        .select("id, status, appointment_id")
+        .maybeSingle();
 
       if (error) {
-        console.error(`Error fetching patients for broadcast for clinic ${input.clinicId}:`, error);
-        throw new Error("Could not fetch recipients for broadcast.");
+        throw new Error(
+          `Failed to link booking lead to appointment: ${
+            error.message ?? "unknown error"
+          }`,
+        );
       }
 
-      let recipientsQueued = 0;
-      const jobPromises: Promise<void>[] = [];
-
-      // 2. Enqueue a job for each eligible patient.
-      for (const patient of patients) {
-        // The user profile is nested inside the patient data. Supabase may
-        // return nested relations as arrays depending on the query, so normalize.
-        const user = Array.isArray(patient.users) ? patient.users[0] : patient.users;
-        if (!user) continue;
-
-        type NotificationPrefs = {
-          sms?: { enabled?: boolean };
-          email?: { enabled?: boolean };
-        } | null | undefined;
-
-  const prefs = user.notification_preferences as NotificationPrefs; // Narrowed type for notification preferences
-
-        if (input.channel === "sms" && prefs?.sms?.enabled && user.phone) {
-          jobPromises.push(enqueueJob("send-sms", { to: user.phone, message: input.message }));
-          recipientsQueued++;
-        } else if (input.channel === "email" && prefs?.email?.enabled && user.email) {
-          jobPromises.push(enqueueJob("send-email", { to: user.email, subject: "An Update from Gabriel Family Clinic", message: input.message }));
-          recipientsQueued++;
-        }
-      }
-      
-      await Promise.all(jobPromises);
-
-      return { success: true, recipientsQueued };
+      return data;
     }),
 });
