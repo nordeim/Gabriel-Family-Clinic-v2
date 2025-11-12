@@ -3,6 +3,7 @@
 -- ============================================================================
 -- Phase 1: Migration 004 - Core Clinical Tables (Patients, Doctors, Staff)
 -- Description: Creates tables for clinical roles and patient records.
+-- NOTE: Written to be safely re-runnable (idempotent) for local/CI validation.
 -- ============================================================================
 
 SET search_path TO clinic, public;
@@ -44,7 +45,7 @@ CREATE TABLE IF NOT EXISTS patients (
     insurance_policy_number_encrypted TEXT,
     insurance_expiry DATE,
     medisave_authorized BOOLEAN DEFAULT false,
-    preferred_doctor_id UUID, -- No FK here to avoid circular dependency; will reference doctors(id)
+    preferred_doctor_id UUID, -- No FK here yet to avoid circular dependency
     preferred_language VARCHAR(5) DEFAULT 'en',
     sms_consent BOOLEAN DEFAULT false,
     email_consent BOOLEAN DEFAULT false,
@@ -64,7 +65,10 @@ CREATE TABLE IF NOT EXISTS patients (
     deleted_at TIMESTAMPTZ,
 
     CONSTRAINT unique_nric_hash_per_clinic UNIQUE(clinic_id, nric_hash),
-    CONSTRAINT valid_emergency_phone CHECK (emergency_contact_phone IS NULL OR emergency_contact_phone ~ '^[+0-9][0-9\s-]+$')
+    CONSTRAINT valid_emergency_phone CHECK (
+        emergency_contact_phone IS NULL
+        OR emergency_contact_phone ~ '^[+0-9][0-9\\s-]+$'
+    )
 );
 
 -- Doctors table: Holds professional information for medical doctors.
@@ -101,11 +105,28 @@ CREATE TABLE IF NOT EXISTS doctors (
     deleted_at TIMESTAMPTZ,
 
     CONSTRAINT valid_consultation_fee CHECK (consultation_fee >= 0),
-    CONSTRAINT valid_rating CHECK (average_rating IS NULL OR (average_rating >= 0 AND average_rating <= 5))
+    CONSTRAINT valid_rating CHECK (
+        average_rating IS NULL
+        OR (average_rating >= 0 AND average_rating <= 5)
+    )
 );
 
--- Add the missing FK from patients to doctors now that doctors table exists
-ALTER TABLE patients ADD CONSTRAINT fk_patients_preferred_doctor FOREIGN KEY (preferred_doctor_id) REFERENCES doctors(id) ON DELETE SET NULL;
+-- Add the missing FK from patients to doctors now that doctors table exists (idempotent)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_patients_preferred_doctor'
+    ) THEN
+        ALTER TABLE patients
+            ADD CONSTRAINT fk_patients_preferred_doctor
+            FOREIGN KEY (preferred_doctor_id)
+            REFERENCES doctors(id)
+            ON DELETE SET NULL;
+    END IF;
+END;
+$$;
 
 -- Staff table: For non-clinical staff like receptionists and admins.
 CREATE TABLE IF NOT EXISTS staff (
@@ -126,10 +147,31 @@ CREATE TABLE IF NOT EXISTS staff (
     deleted_at TIMESTAMPTZ
 );
 
--- Apply the `updated_at` trigger
-CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON patients
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-CREATE TRIGGER update_doctors_updated_at BEFORE UPDATE ON doctors
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-CREATE TRIGGER update_staff_updated_at BEFORE UPDATE ON staff
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+-- Apply the `updated_at` trigger (idempotent for each table)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'update_patients_updated_at'
+    ) THEN
+        CREATE TRIGGER update_patients_updated_at
+            BEFORE UPDATE ON patients
+            FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'update_doctors_updated_at'
+    ) THEN
+        CREATE TRIGGER update_doctors_updated_at
+            BEFORE UPDATE ON doctors
+            FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'update_staff_updated_at'
+    ) THEN
+        CREATE TRIGGER update_staff_updated_at
+            BEFORE UPDATE ON staff
+            FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+END;
+$$;

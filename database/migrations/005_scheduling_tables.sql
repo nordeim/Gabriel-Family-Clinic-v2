@@ -46,12 +46,6 @@ CREATE TABLE IF NOT EXISTS appointments (
     rescheduled_from UUID REFERENCES appointments(id) ON DELETE SET NULL,
     no_show_marked_at TIMESTAMPTZ,
 
-    -- Generated columns used for immutable overlap checking in the exclusion constraint.
-    -- This keeps the index expression immutable and avoids relying on non-immutable functions.
-    appointment_start_at TIMESTAMPTZ GENERATED ALWAYS AS
-        ((appointment_date + appointment_time)::timestamptz) STORED,
-    appointment_end_at TIMESTAMPTZ GENERATED ALWAYS AS
-        ((appointment_date + appointment_time + (duration_minutes || ' minutes')::interval)::timestamptz) STORED,
 
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
