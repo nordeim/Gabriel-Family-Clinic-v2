@@ -45,6 +45,14 @@ CREATE TABLE IF NOT EXISTS appointments (
     cancellation_reason TEXT,
     rescheduled_from UUID REFERENCES appointments(id) ON DELETE SET NULL,
     no_show_marked_at TIMESTAMPTZ,
+
+    -- Generated columns used for immutable overlap checking in the exclusion constraint.
+    -- This keeps the index expression immutable and avoids relying on non-immutable functions.
+    appointment_start_at TIMESTAMPTZ GENERATED ALWAYS AS
+        ((appointment_date + appointment_time)::timestamptz) STORED,
+    appointment_end_at TIMESTAMPTZ GENERATED ALWAYS AS
+        ((appointment_date + appointment_time + (duration_minutes || ' minutes')::interval)::timestamptz) STORED,
+
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
@@ -54,14 +62,17 @@ CREATE TABLE IF NOT EXISTS appointments (
 
 -- This exclusion constraint is superior to a simple UNIQUE constraint as it
 -- properly handles duration, preventing any overlap in a doctor's schedule.
-ALTER TABLE appointments ADD CONSTRAINT prevent_appointment_overlap
+-- Implementation detail:
+-- - We use generated columns (appointment_start_at, appointment_end_at)
+--   to ensure the underlying index expression is immutable and compatible
+--   with PostgreSQL/Supabase requirements for GiST indexes.
+ALTER TABLE appointments
+    ADD CONSTRAINT prevent_appointment_overlap
     EXCLUDE USING gist (
         doctor_id WITH =,
-        tstzrange(
-            (appointment_date + appointment_time)::timestamptz,
-            (appointment_date + appointment_time + (duration_minutes || ' minutes')::interval)::timestamptz
-        ) WITH &&
-    ) WHERE (status NOT IN ('cancelled', 'rescheduled'));
+        tstzrange(appointment_start_at, appointment_end_at) WITH &&
+    )
+    WHERE (status NOT IN ('cancelled', 'rescheduled'));
 
 
 -- Appointment slots table: Manages doctor availability.
