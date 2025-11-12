@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  supabase-db:
+    image: ${SUPABASE_DB_IMAGE:-supabase/postgres:17.6.1.044}
+    container_name: ${SUPABASE_DB_CONTAINER_NAME:-supabase-db-local}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${SUPABASE_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${SUPABASE_DB_PASSWORD:-local_dev_password_change_me}
+      POSTGRES_DB: ${SUPABASE_DB_NAME:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${SUPABASE_DB_PORT:-54322}:5432"
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SUPABASE_DB_USER:-postgres} -d ${SUPABASE_DB_NAME:-postgres} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  supabase_db_data:
+    driver: local
