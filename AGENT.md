@@ -292,13 +292,141 @@ Current status (as of latest remediation):
 
 ---
 
-## 14) Final short checklist for first delivery cycle
-- [x] Clone repo and run npm install
-- [x] Create .env.local from .env.example (use dev Supabase)
-- [x] Run `npm run build` (includes lint + type-check) — currently passes
-- [ ] Run migrations and seeds (if using the full DB stack)
-- [ ] Add incremental Jest coverage for critical routers and jobs
-- [ ] Open small, focused PRs for further enhancements
+## 14) Booking Flow — Implementation Snapshot
+
+This section captures the current, code-backed booking architecture that contributors MUST treat as source of truth.
+
+### Public booking requests (lead capture)
+
+- Entry:
+  - Public booking page (`/booking`) presents a lightweight form for new patients.
+- Backend:
+  - tRPC router: [`lib/trpc/routers/appointment.router.ts`](lib/trpc/routers/appointment.router.ts:1)
+  - Procedure: `requestBookingPublic`
+    - Input validated with `publicBookingInputSchema` from [`src/services/appointment-service.ts`](src/services/appointment-service.ts:44).
+    - Delegates to `AppointmentService.createPublicBookingRequest`.
+  - Service:
+    - [`AppointmentService.createPublicBookingRequest`](src/services/appointment-service.ts:351)
+    - Persists into `booking.public_booking_requests` (see `database/migrations/019_public_booking_requests.sql`).
+    - Does NOT create `clinic.appointments` or other PHI-heavy entities.
+- Purpose:
+  - Safe, PDPA-conscious lead intake.
+  - Source for admin/staff to follow up and convert to real appointments.
+
+### Authenticated bookings (transactional)
+
+- Entry:
+  - `/portal/appointments/book` (patient portal; requires NextAuth session).
+- Backend:
+  - Appointment tRPC router:
+    - `getAvailableSlots`
+      - Uses `AppointmentService.getAvailableSlots` to query `clinic.appointment_slots`.
+    - `requestBooking` (protected)
+      - Requires `ctx.session.user.id`.
+      - Validates with `protectedBookingInputSchema`.
+      - Delegates to `AppointmentService.requestBookingForAuthenticatedUser`.
+  - Service:
+    - [`AppointmentService.requestBookingForAuthenticatedUser`](src/services/appointment-service.ts:295)
+      - Resolves/validates clinicId and patientId.
+      - Invokes `booking.create_booking` stored procedure via Supabase RPC
+        (see [`database/migrations/013_booking_transaction.sql`](database/migrations/013_booking_transaction.sql:1)).
+      - Maps DB response into:
+        - `BookingResult` on success.
+        - Typed errors:
+          - `SlotNotFoundError`
+          - `SlotUnavailableError`
+          - `BookingInProgressError`
+          - `BookingError` (fallback).
+- Guarantees:
+  - Concurrency-safe booking.
+  - Idempotency via `idempotency_key`.
+  - Clear failure semantics for UI.
+
+### Admin/staff booking management
+
+- Router:
+  - [`lib/trpc/routers/admin.router.ts`](lib/trpc/routers/admin.router.ts:1)
+  - All relevant procedures use `adminProcedure` to enforce admin/staff roles.
+- Booking-related procedures (current pattern):
+  - `listPublicBookingRequests`:
+    - Reads from `booking.public_booking_requests` with filters/limits.
+  - `updatePublicBookingRequestStatus`:
+    - Updates status lifecycle (e.g. `new` → `contacted`).
+  - `linkPublicBookingRequestToAppointment`:
+    - Connects a lead row to a confirmed appointment id and marks as confirmed.
+- Role of this layer:
+  - Bridges anonymous lead capture and transactional bookings.
+  - Keeps a single Postgres source of truth (Supabase-hosted) for booking data.
+
+---
+
+## 15) Booking-Related Testing Strategy
+
+The booking stack has dedicated unit-level coverage and planned E2E paths.
+
+### Vitest unit tests
+
+Script:
+- `npm run test:unit`
+
+Key suites:
+
+- [`tests/server/appointment-service.test.ts`](tests/server/appointment-service.test.ts:1)
+  - Mocks `@/lib/supabase/admin`.
+  - Verifies:
+    - Public booking requests:
+      - Inserts into `booking.public_booking_requests`.
+      - Handles DB errors gracefully.
+      - Enforces Zod validation.
+    - Authenticated bookings:
+      - Calls `booking.create_booking` RPC with correct args.
+      - Correctly maps stored-proc response codes to domain errors/results.
+
+- [`tests/server/appointment-router.test.ts`](tests/server/appointment-router.test.ts:1)
+  - Uses `createCallerFactory(appointmentRouter)`.
+  - Mocks `AppointmentService`.
+  - Asserts:
+    - `requestBookingPublic`:
+      - Delegates to `AppointmentService.createPublicBookingRequest`.
+      - Rejects invalid input with `TRPCError`.
+    - `getAvailableSlots`:
+      - Delegates to `AppointmentService.getAvailableSlots`.
+    - `requestBooking`:
+      - Rejects when no session (UNAUTHORIZED).
+      - With session, passes `userId` through to `AppointmentService.requestBookingForAuthenticatedUser`.
+
+- [`tests/server/admin-router.test.ts`](tests/server/admin-router.test.ts:1)
+  - Uses `createCallerFactory(adminRouter)`.
+  - Mocks `@/lib/supabase/admin`.
+  - Asserts:
+    - `adminProcedure` enforcement:
+      - Non-admin → `TRPCError`.
+      - Admin → allowed.
+    - `listPublicBookingRequests`:
+      - Issues expected `from/select/limit` calls on `booking.public_booking_requests`.
+    - `updatePublicBookingRequestStatus` / `linkPublicBookingRequestToAppointment`:
+      - Perform expected updates with correct `id` and status/appointment fields.
+    - Stubbed metrics/users return documented shapes.
+
+### Playwright E2E (to be implemented/extended)
+
+Script:
+- `npm run test:e2e`
+
+Target booking flows:
+
+- Public:
+  - `/booking` → submit form → assert confirmation → (optionally) assert lead row.
+- Authenticated:
+  - `/portal/appointments/book` with seeded slots + logged-in user → book → assert success + DB.
+- Admin:
+  - `/admin/bookings` with seeded leads/admin user → list, update, link → assert behavior.
+
+Contributors:
+- MUST align new booking-related changes with this documented flow.
+- MUST extend tests (Vitest/Playwright) when altering booking behavior.
+
+---
 
 ---
 

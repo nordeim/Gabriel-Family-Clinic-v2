@@ -591,28 +591,54 @@ sequenceDiagram
     AUTH->>B: Set session cookie
     B->>APP: Redirect to dashboard
     
-    %% Appointment Booking Flow
-    U->>B: Book Appointment
-    B->>API: GET /api/appointments/availability
-    API->>CACHE: Check cached slots
-    alt Cache Miss
-        API->>DB: Query available slots
-        DB->>API: Available slots
-        API->>CACHE: Update cache (TTL: 5min)
-    end
-    CACHE->>API: Return slots
-    API->>B: Display slots
+    %% Booking Flow (Aligned with Current Implementation)
     
-    U->>B: Select slot
-    B->>API: POST /api/appointments
-    API->>DB: Create appointment
-    DB->>API: Appointment created
+        %% Public lead capture (/booking)
+        U->>B: Open /booking
+        B->>APP: Render public booking form
+        U->>B: Submit basic details (name, phone, reason, preferred time, contact pref)
+        B->>TRPC: call appointment.requestBookingPublic
+        TRPC->>SERV: AppointmentService.createPublicBookingRequest
+        SERV->>DB: INSERT INTO booking.public_booking_requests
+        DB-->>SERV: Insert OK
+        SERV-->>TRPC: { status: "pending", message: "Request received" }
+        TRPC-->>B: Response
+        B-->>U: Show confirmation message
     
-    API->>EXT: Send SMS confirmation
-    EXT-->>U: SMS notification
+        %% Authenticated booking (/portal/appointments/book)
+        U->>B: Open /portal/appointments/book (authenticated)
+        B->>TRPC: call appointment.getAvailableSlots
+        TRPC->>SERV: AppointmentService.getAvailableSlots
+        SERV->>DB: SELECT FROM clinic.appointment_slots WHERE is_available = true
+        DB-->>SERV: Available slots
+        SERV-->>TRPC: Slots list
+        TRPC-->>B: Slots
+        B-->>U: Render selectable slots
     
-    API->>B: Booking confirmed
-    B->>U: Show confirmation
+        U->>B: Select slot and confirm booking
+        B->>TRPC: call appointment.requestBooking (protected)
+        TRPC->>AUTH: Verify ctx.session.user.id (NextAuth)
+        TRPC->>SERV: AppointmentService.requestBookingForAuthenticatedUser
+        SERV->>DB: CALL booking.create_booking(...) via Supabase RPC
+        DB-->>SERV: JSONB result (success / conflict / error)
+        SERV-->>TRPC: BookingResult or typed error
+        TRPC-->>B: Structured result
+        B-->>U: Show success or friendly error (slot taken, in progress, etc.)
+    
+        %% Admin lead management (/admin/bookings)
+        ADMIN->>B: Open /admin/bookings (admin session)
+        B->>TRPC: call admin.listPublicBookingRequests
+        TRPC->>DB: SELECT FROM booking.public_booking_requests WITH filters/limit
+        DB-->>TRPC: Leads
+        TRPC-->>B: Lead list
+        B-->>ADMIN: Display leads table
+    
+        ADMIN->>B: Update status / link to appointment
+        B->>TRPC: call admin.updatePublicBookingRequestStatus / linkPublicBookingRequestToAppointment
+        TRPC->>DB: UPDATE booking.public_booking_requests SET status/appointment_id
+        DB-->>TRPC: OK
+        TRPC-->>B: Updated entity
+        B-->>ADMIN: Updated view
     
     %% Real-time Queue Update
     APP->>DB: Subscribe to queue changes
@@ -1486,50 +1512,80 @@ export class AppointmentService {
 export const appointmentService = new AppointmentService();
 ```
 
-### 10.2 Testing Strategy
+### 10.2 Booking-Focused Testing Strategy (Current)
 
-```typescript
-// Unit test example
-describe('AppointmentService', () => {
-  beforeEach(() => {
-    // Setup
-  });
+The booking domain is validated at multiple layers.
 
-  describe('create', () => {
-    it('should create appointment successfully', async () => {
-      const appointment = await appointmentService.create(mockData);
-      expect(appointment).toHaveProperty('id');
-    });
+#### 1) Vitest unit tests
 
-    it('should throw error for invalid slot', async () => {
-      await expect(appointmentService.create(invalidData))
-        .rejects
-        .toThrow('Slot not available');
-    });
-  });
-});
+- Command:
+  - `npm run test:unit`
 
-// E2E test example
-test('Patient books appointment', async ({ page }) => {
-  // Navigate to booking page
-  await page.goto('/book-appointment');
-  
-  // Select doctor
-  await page.click('[data-testid="doctor-card-1"]');
-  
-  // Select date and time
-  await page.click('[data-testid="date-picker"]');
-  await page.click('[data-testid="date-2024-01-15"]');
-  await page.click('[data-testid="time-slot-10:00"]');
-  
-  // Confirm booking
-  await page.click('[data-testid="confirm-booking"]');
-  
-  // Verify success
-  await expect(page.locator('[data-testid="success-message"]'))
-    .toContainText('Appointment confirmed');
-});
-```
+- [`tests/server/appointment-service.test.ts`](tests/server/appointment-service.test.ts:1)
+  - Mocks `@/lib/supabase/admin`.
+  - Verifies:
+    - `AppointmentService.createPublicBookingRequest`:
+      - Inserts into `booking.public_booking_requests`.
+      - Handles Supabase errors gracefully.
+      - Enforces Zod validation.
+    - `AppointmentService.requestBookingForAuthenticatedUser`:
+      - Calls `booking.create_booking` RPC with correct arguments.
+      - Maps:
+        - `slot_not_found` → `SlotNotFoundError`
+        - `slot_unavailable` → `SlotUnavailableError`
+        - `in_progress` → `BookingInProgressError`
+        - Others → `BookingError`.
+
+- [`tests/server/appointment-router.test.ts`](tests/server/appointment-router.test.ts:1)
+  - Uses `createCallerFactory(appointmentRouter)`.
+  - Mocks `AppointmentService`.
+  - Confirms:
+    - `requestBookingPublic`:
+      - Delegates to service.
+      - Rejects invalid input with `TRPCError` (Zod).
+    - `getAvailableSlots`:
+      - Delegates to service.
+    - `requestBooking`:
+      - Enforces auth (UNAUTHORIZED without session).
+      - Passes `userId` and payload correctly to service.
+
+- [`tests/server/admin-router.test.ts`](tests/server/admin-router.test.ts:1)
+  - Uses `createCallerFactory(adminRouter)`.
+  - Mocks `@/lib/supabase/admin`.
+  - Confirms:
+    - `adminProcedure`:
+      - Blocks non-admin roles.
+    - `listPublicBookingRequests`:
+      - Uses `booking.public_booking_requests` with expected select/limit behavior.
+    - `updatePublicBookingRequestStatus` / `linkPublicBookingRequestToAppointment`:
+      - Issue correct updates to status and appointment linkage.
+    - Stub methods (`getUsers`, `getDashboardMetrics`) return documented shapes.
+
+#### 2) Playwright E2E (scenarios to implement/extend)
+
+- Command:
+  - `npm run test:e2e`
+
+Recommended flows:
+
+- Public lead:
+  - `/booking`:
+    - Submit request.
+    - Assert confirmation.
+    - Optionally validate `booking.public_booking_requests` in test DB.
+
+- Authenticated booking:
+  - `/portal/appointments/book`:
+    - With seeded slots + authenticated user.
+    - Select slot, confirm, assert success and DB entry.
+
+- Admin pipeline:
+  - `/admin/bookings`:
+    - With seeded leads + admin user.
+    - List, change status, link to appointment.
+    - Assert changes in UI/DB.
+
+These strategies ensure the booking stack remains robust, regression-safe, and aligned with the documented architecture.
 
 ### 10.3 Performance Optimization Guidelines
 

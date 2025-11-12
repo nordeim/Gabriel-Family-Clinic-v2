@@ -335,25 +335,151 @@ npm run format
 npm run type-check
 ```
 
-### Testing
+## 🩺 Booking Flow — Current Implementation
 
-The current codebase is wired for:
+### Public booking requests (`/booking`)
+
+For unauthenticated users, the booking flow is implemented as a safe lead-capture pipeline:
+
+- UI:
+  - Public `/booking` page renders a minimal request form for new patients.
+- Backend:
+  - tRPC router: [`lib/trpc/routers/appointment.router.ts`](lib/trpc/routers/appointment.router.ts:1)
+  - Procedure: `requestBookingPublic`
+    - Validates input with `publicBookingInputSchema` from [`src/services/appointment-service.ts`](src/services/appointment-service.ts:44).
+    - Delegates to `AppointmentService.createPublicBookingRequest`.
+  - Service:
+    - [`AppointmentService.createPublicBookingRequest`](src/services/appointment-service.ts:351)
+    - Persists lead records into `booking.public_booking_requests` (see migrations including `database/migrations/019_public_booking_requests.sql`).
+    - Does NOT create real appointments or PHI-heavy records; designed for PDPA-safe initial capture.
+
+Outcome:
+- Returns a friendly confirmation message.
+- Staff/Admin convert leads into real appointments via admin tooling/tRPC procedures.
+
+### Authenticated bookings (`/portal/appointments/book`)
+
+For logged-in patients (NextAuth + Prisma identity):
+
+- UI:
+  - `/portal/appointments/book` uses tRPC to:
+    - Fetch available slots via `getAvailableSlots`.
+    - Submit bookings via `requestBooking`.
+- Backend:
+  - tRPC appointment router:
+    - `getAvailableSlots`
+      - Uses `AppointmentService.getAvailableSlots` to query `clinic.appointment_slots`.
+    - `requestBooking` (protected)
+      - Requires `ctx.session.user`.
+      - Validates payload with `protectedBookingInputSchema`.
+      - Delegates to `AppointmentService.requestBookingForAuthenticatedUser`.
+  - Service:
+    - [`AppointmentService.requestBookingForAuthenticatedUser`](src/services/appointment-service.ts:295)
+      - Resolves patient for the authenticated user.
+      - Calls `booking.create_booking` stored procedure (see [`database/migrations/013_booking_transaction.sql`](database/migrations/013_booking_transaction.sql:1)) via Supabase RPC.
+      - Maps stored procedure responses into:
+        - `BookingResult` on success.
+        - `SlotNotFoundError`, `SlotUnavailableError`, `BookingInProgressError`, or `BookingError` for failure modes.
+
+Outcome:
+- Concurrency-safe bookings with idempotency and clear error semantics.
+- Aligns with database-first design and RLS assumptions.
+
+### Admin/staff booking management (`/admin/bookings`)
+
+- Admin tRPC router: [`lib/trpc/routers/admin.router.ts`](lib/trpc/routers/admin.router.ts:1)
+  - Protected by `adminProcedure` (role/privilege enforced).
+  - Key booking-related procedures:
+    - `listPublicBookingRequests` — read from `booking.public_booking_requests`.
+    - `updatePublicBookingRequestStatus` — move leads through lifecycle (e.g. `new` → `contacted`).
+    - `linkPublicBookingRequestToAppointment` — associate a lead with a confirmed appointment (bridging public lead → transactional booking).
+- Intended UI:
+  - `/admin/bookings` page consumes these procedures to:
+    - Triage requests.
+    - Confirm and track bookings.
+    - Maintain an auditable pipeline from public lead to scheduled appointment.
+
+This forms a cohesive, production-oriented booking architecture:
+- Public leads: `booking.public_booking_requests`.
+- Confirmed bookings: `clinic.appointment_slots` + `clinic.appointments` via `booking.create_booking`.
+- Admin workflows: admin router procedures operating over the same Postgres source of truth.
+
+---
+
+## 🧪 Booking & Testing Strategy
+
+### Unit tests (Vitest)
+
+Run:
 
 ```bash
-# Lint & type-check (recommended before PRs)
-npm run lint
-npm run type-check
+npm run test:unit
+```
 
-# Unit / integration tests (Jest scaffolding in progress)
-npm test
+Key suites:
 
-# E2E tests (Playwright)
+- [`tests/server/appointment-service.test.ts`](tests/server/appointment-service.test.ts:1)
+  - Mocks `@/lib/supabase/admin`.
+  - Covers:
+    - `AppointmentService.createPublicBookingRequest`
+      - Correct insert into `booking.public_booking_requests`.
+      - Graceful fallback on DB errors.
+      - Zod validation behavior.
+    - `AppointmentService.requestBookingForAuthenticatedUser`
+      - Correct `booking.create_booking` RPC payload.
+      - Mapping of:
+        - `slot_not_found` → `SlotNotFoundError`
+        - `slot_unavailable` → `SlotUnavailableError`
+        - `in_progress` → `BookingInProgressError`
+        - Unknown/transport errors → `BookingError`.
+
+- [`tests/server/appointment-router.test.ts`](tests/server/appointment-router.test.ts:1)
+  - Uses `createCallerFactory(appointmentRouter)`.
+  - Mocks `AppointmentService`:
+    - Asserts:
+      - `requestBookingPublic` delegates to `AppointmentService.createPublicBookingRequest` and enforces Zod.
+      - `getAvailableSlots` delegates to `AppointmentService.getAvailableSlots`.
+      - `requestBooking`:
+        - Rejects without session (UNAUTHORIZED).
+        - Delegates with `userId` when session present.
+
+- [`tests/server/admin-router.test.ts`](tests/server/admin-router.test.ts:1)
+  - Uses `createCallerFactory(adminRouter)`.
+  - Mocks Supabase admin client:
+    - Verifies:
+      - `adminProcedure` rejects non-admin roles.
+      - `listPublicBookingRequests` issues the expected `from/select/limit` calls.
+      - `updatePublicBookingRequestStatus` and `linkPublicBookingRequestToAppointment` update expected fields.
+      - `getUsers` / `getDashboardMetrics` return documented stub shapes.
+
+### E2E tests (Playwright)
+
+Run:
+
+```bash
 npm run test:e2e
 ```
 
-Notes:
-- Jest is configured via [`jest.config.cjs`](jest.config.cjs:1) for `tests/server/**/*.test.ts`.
-- Some suites are scaffolds; contributors should expand coverage following existing patterns.
+Recommended booking flows (to implement/extend):
+
+- Public lead flow:
+  - Visit `/booking`.
+  - Submit lead form.
+  - Assert confirmation text.
+  - Optionally verify `booking.public_booking_requests` in test DB.
+
+- Authenticated booking:
+  - Log in via seeded NextAuth user.
+  - Visit `/portal/appointments/book`.
+  - Load slots, select one, confirm booking.
+  - Assert success message and DB record.
+
+- Admin lead management:
+  - Log in as admin.
+  - Visit `/admin/bookings`.
+  - Validate leads list, update statuses, and link to appointments.
+
+These layers combine to provide strong coverage for the booking system without altering runtime architecture.
 
 ### Commit Convention
 
