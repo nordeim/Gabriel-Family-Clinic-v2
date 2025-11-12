@@ -126,12 +126,39 @@ CREATE TABLE IF NOT EXISTS webhook_events (
 );
 
 
--- Apply the `updated_at` trigger
-CREATE TRIGGER update_telemedicine_sessions_updated_at BEFORE UPDATE ON telemedicine_sessions
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-CREATE TRIGGER update_system_settings_updated_at BEFORE UPDATE ON system_settings
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-CREATE TRIGGER update_feature_flags_updated_at BEFORE UPDATE ON feature_flags
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-CREATE TRIGGER update_integration_webhooks_updated_at BEFORE UPDATE ON integration_webhooks
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+-- Apply the `updated_at` trigger (idempotent for each table)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'update_telemedicine_sessions_updated_at'
+    ) THEN
+        CREATE TRIGGER update_telemedicine_sessions_updated_at
+            BEFORE UPDATE ON telemedicine_sessions
+            FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'update_system_settings_updated_at'
+    ) THEN
+        CREATE TRIGGER update_system_settings_updated_at
+            BEFORE UPDATE ON system_settings
+            FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'update_feature_flags_updated_at'
+    ) THEN
+        CREATE TRIGGER update_feature_flags_updated_at
+            BEFORE UPDATE ON feature_flags
+            FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'update_integration_webhooks_updated_at'
+    ) THEN
+        CREATE TRIGGER update_integration_webhooks_updated_at
+            BEFORE UPDATE ON integration_webhooks
+            FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    END IF;
+END;
+$$;
